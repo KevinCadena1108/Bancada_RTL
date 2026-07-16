@@ -239,47 +239,67 @@
   .mut-head .legend .k-dead { color: var(--live); }
   .mut-head .legend .k-alive { color: var(--dead); }
 
-  .mut-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+  .mut-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
   }
-  .cell {
-    width: 34px;
-    height: 34px;
-    border-radius: 4px;
+  @media (max-width: 760px) {
+    .mut-list { grid-template-columns: 1fr; }
+  }
+  .mut-item {
+    background: var(--panel);
     border: 1px solid var(--edge);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .mut-item.dead  { border-color: var(--live); }
+  .mut-item.alive { border-color: var(--dead); }
+
+  .mut-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
     background: var(--panel-2);
-    position: relative;
-    cursor: default;
+    border-bottom: 1px solid var(--edge);
+    font-size: 12px;
   }
-  /* morto = acende verde (o testbench pegou o defeito) */
-  .cell.dead {
-    background: var(--live);
-    border-color: var(--live);
-    box-shadow: 0 0 10px rgba(47,216,164,0.5);
+  .mut-item-head .op { color: var(--ink); }
+  .mut-item-head .ln { color: var(--ink-dim); }
+
+  .badge {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 3px;
+    flex: none;
   }
-  /* sobreviveu = vermelho apagado (defeito passou batido) */
-  .cell.alive {
-    background: transparent;
-    border-color: var(--dead);
-    box-shadow: inset 0 0 0 1px var(--dead);
+  .badge.dead  { color: var(--bg); background: var(--live); }
+  .badge.alive { color: var(--bg); background: var(--dead); }
+
+  .mut-code {
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
   }
-  .cell[data-tip]:hover::after {
-    content: attr(data-tip);
-    position: absolute;
-    bottom: 130%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--edge);
-    color: var(--ink);
+  .mut-code .del { color: var(--ink-dim); white-space: pre; }
+  .mut-code .del::before { content: "− "; color: var(--dead); }
+  .mut-code .add { color: var(--ink); white-space: pre; }
+  .mut-code .add::before { content: "+ "; color: var(--live); }
+
+  .mut-verdict {
+    padding: 8px 12px 10px;
     font-size: 11px;
-    white-space: nowrap;
-    padding: 4px 8px;
-    border-radius: 4px;
-    pointer-events: none;
-    z-index: 5;
+    color: var(--ink-dim);
+    border-top: 1px dashed var(--edge);
   }
+  .mut-item.dead  .mut-verdict b { color: var(--live); font-weight: 400; }
+  .mut-item.alive .mut-verdict b { color: var(--dead); font-weight: 400; }
 
   /* ---- log ---- */
   .log-section { margin-top: 32px; display: none; }
@@ -389,16 +409,16 @@ endmodule"></textarea>
     </div>
   </div>
 
-  <!-- assinatura: grade de mutantes -->
+  <!-- mutantes: o que foi trocado e o veredito de cada um -->
   <div class="mut-section" id="mut-section">
     <div class="mut-head">
-      Mapa de mutantes
+      Mutantes avaliados
       <span class="legend">
-        <b class="k-dead">■ morto</b> (defeito detectado) ·
-        <b class="k-alive">□ sobreviveu</b> (passou batido)
+        <b class="k-dead">■ detectado</b> (testbench falhou na versão trocada) ·
+        <b class="k-alive">□ sobreviveu</b> (testbench passou sem perceber)
       </span>
     </div>
-    <div class="mut-grid" id="mut-grid"></div>
+    <div class="mut-list" id="mut-list"></div>
   </div>
 
   <!-- log -->
@@ -494,16 +514,48 @@ function render(d) {
     $("mut-unit").textContent = m.mortos + " mortos / " + m.total;
     $("mutn-val").textContent = m.total;
     $("mutn-val").className = "value";
-    $("mutn-unit").textContent = m.sobreviventes + " sobreviveram";
+    $("mutn-unit").textContent = m.aviso || (m.sobreviventes + " sobreviveram");
 
-    // grade
-    const grid = $("mut-grid");
-    grid.innerHTML = "";
-    m.detalhe.filter(x => x.status !== "nao_compilou").forEach((x, i) => {
-      const cell = document.createElement("div");
-      cell.className = "cell " + (x.status === "morto" ? "dead" : "alive");
-      cell.setAttribute("data-tip", `${x.desc} — ${x.status}`);
-      grid.appendChild(cell);
+    // lista detalhada: o que foi trocado e o veredito
+    const list = $("mut-list");
+    list.innerHTML = "";
+    m.detalhe.forEach((x, i) => {
+      const morto = x.status === "morto";
+      const item = document.createElement("div");
+      item.className = "mut-item " + (morto ? "dead" : "alive");
+
+      const head = document.createElement("div");
+      head.className = "mut-item-head";
+      const info = document.createElement("span");
+      info.innerHTML = `<span class="op">#${i + 1} · ${esc(x.desc)}</span>` +
+                       ` <span class="ln">· linha ${x.linha}</span>`;
+      const badge = document.createElement("span");
+      badge.className = "badge " + (morto ? "dead" : "alive");
+      badge.textContent = morto ? "detectado" : "sobreviveu";
+      head.appendChild(info);
+      head.appendChild(badge);
+
+      const code = document.createElement("div");
+      code.className = "mut-code";
+      const del = document.createElement("div");
+      del.className = "del";
+      del.textContent = x.original;
+      const add = document.createElement("div");
+      add.className = "add";
+      add.textContent = x.mutado;
+      code.appendChild(del);
+      code.appendChild(add);
+
+      const verdict = document.createElement("div");
+      verdict.className = "mut-verdict";
+      verdict.innerHTML = morto
+        ? "testbench <b>falhou</b> na versão trocada → defeito detectado"
+        : "testbench <b>passou</b> na versão trocada → defeito não percebido";
+
+      item.appendChild(head);
+      item.appendChild(code);
+      item.appendChild(verdict);
+      list.appendChild(item);
     });
     $("mut-section").classList.add("show");
   } else {
@@ -521,6 +573,12 @@ function render(d) {
   $("log-section").classList.add("show");
 
   $("results").classList.add("show");
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 function flag(nome, ligado) {

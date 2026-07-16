@@ -37,6 +37,9 @@ TB_TOP = "tb"
 # Timeout por invocacao do Verilator/simulacao (segundos).
 TIMEOUT = 60
 
+# Quantos mutantes validos (que compilam) avaliar por rodada.
+MAX_MUTANTES = 4
+
 
 # --------------------------------------------------------------------------
 # Utilidades
@@ -179,25 +182,54 @@ def gerar_mutantes(rtl_texto):
     """
     Gera mutantes de primeira ordem: para cada ocorrencia de cada operador,
     uma copia do RTL com apenas aquela ocorrencia trocada.
-    Retorna lista de (descricao, texto_mutante).
+    Retorna lista de dicts com o texto mutado e a linha antes/depois da troca.
     """
+    linhas_orig = rtl_texto.splitlines()
     mutantes = []
     for desc, pat, repl in MUTACOES:
         for m in re.finditer(pat, rtl_texto):
             i, j = m.start(), m.end()
             mut = rtl_texto[:i] + repl + rtl_texto[j:]
-            if mut != rtl_texto:
-                mutantes.append((desc, mut))
+            if mut == rtl_texto:
+                continue
+            num = rtl_texto.count("\n", 0, i) + 1
+            mutantes.append({
+                "desc": desc,
+                "texto": mut,
+                "linha": num,
+                "original": linhas_orig[num - 1].strip(),
+                "mutado": mut.splitlines()[num - 1].strip(),
+            })
     return mutantes
 
 
-def testar_mutacao(rtl_texto, tb_path, work):
+def ordenar_diverso(mutantes):
     """
-    Para cada mutante: compila com o TB e roda. exit!=0 => mutante morto.
+    Intercala os mutantes por operador (round-robin) para que os primeiros
+    avaliados cubram operadores diferentes, e nao 4 variantes do mesmo "+".
+    """
+    por_op = {}
+    for mt in mutantes:
+        por_op.setdefault(mt["desc"], []).append(mt)
+    filas = list(por_op.values())
+    ordenado = []
+    while filas:
+        filas = [f for f in filas if f]
+        for f in filas:
+            if f:
+                ordenado.append(f.pop(0))
+    return ordenado
+
+
+def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
+    """
+    Avalia ate max_mutantes mutantes validos (que compilam), em ordem
+    diversificada por operador. Para cada um: compila com o TB e roda.
+    exit!=0 => testbench detectou a troca => mutante morto.
     Usa --binary (nao precisa de cobertura aqui) => mais rapido.
     """
-    mutantes = gerar_mutantes(rtl_texto)
-    if not mutantes:
+    candidatos = ordenar_diverso(gerar_mutantes(rtl_texto))
+    if not candidatos:
         return {
             "total": 0, "mortos": 0, "sobreviventes": 0, "score": None,
             "detalhe": [], "aviso": "nenhum operador mutavel encontrado no RTL",
@@ -207,10 +239,13 @@ def testar_mutacao(rtl_texto, tb_path, work):
     sobreviventes = 0
     detalhe = []
 
-    for idx, (desc, mut_txt) in enumerate(mutantes):
+    for cand in candidatos:
+        if mortos + sobreviventes >= max_mutantes:
+            break
+
         mdir = build_dir(work)
         mut_file = mdir / "mut.v"
-        mut_file.write_text(mut_txt)
+        mut_file.write_text(cand["texto"])
 
         rc, out, err = run(
             [
@@ -222,25 +257,35 @@ def testar_mutacao(rtl_texto, tb_path, work):
             cwd=work,
         )
         if rc != 0:
-            # Nao compilou: mutante invalido, nao conta.
-            detalhe.append({"desc": desc, "status": "nao_compilou"})
+            # Nao compilou: mutante invalido, tenta o proximo candidato.
             shutil.rmtree(mdir, ignore_errors=True)
             continue
 
         rc, out, err = run([str(mdir / "mut")], cwd=work)
+        status = "morto" if rc != 0 else "sobreviveu"
         if rc != 0:
             mortos += 1
-            detalhe.append({"desc": desc, "status": "morto"})
         else:
             sobreviventes += 1
-            detalhe.append({"desc": desc, "status": "sobreviveu"})
+        detalhe.append({
+            "desc": cand["desc"],
+            "status": status,
+            "linha": cand["linha"],
+            "original": cand["original"],
+            "mutado": cand["mutado"],
+        })
         shutil.rmtree(mdir, ignore_errors=True)
 
     validos = mortos + sobreviventes
     score = round(100.0 * mortos / validos, 1) if validos else None
+    aviso = None
+    if validos == 0:
+        aviso = "nenhum mutante valido: todos falharam ao compilar"
+    elif validos < max_mutantes:
+        aviso = f"apenas {validos} mutante(s) valido(s) no RTL"
     return {
         "total": validos, "mortos": mortos, "sobreviventes": sobreviventes,
-        "score": score, "detalhe": detalhe, "aviso": None,
+        "score": score, "detalhe": detalhe, "aviso": aviso,
     }
 
 
