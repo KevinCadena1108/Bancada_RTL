@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "veriweb-flask",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["start.sh"],
+      "port": 5000
+    }
+  ]
+}

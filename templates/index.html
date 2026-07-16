@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bancada RTL — cobertura & mutação</title>
+<style>
+  :root {
+    --bg:        #0a1420;   /* fundo osciloscopio, azul-noite */
+    --panel:     #0f1d2e;
+    --panel-2:   #132539;
+    --grid:      #16324d;
+    --edge:      #1e4060;
+    --ink:       #cfe3f2;   /* texto principal, azul-gelo */
+    --ink-dim:   #6d8aa3;
+    --trace:     #f5b942;   /* traco fosforescente ambar */
+    --trace-dim: #7a5f28;
+    --live:      #2fd8a4;   /* verde: passou / coberto */
+    --dead:      #ff5d5d;   /* vermelho: falha / sobreviveu */
+    --mono: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    background:
+      radial-gradient(ellipse 120% 80% at 50% -10%, #10233a 0%, var(--bg) 55%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+  }
+
+  /* leve grade de tela de instrumento sobre tudo */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--edge);
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--ink);
+  }
+  h1 .tick { color: var(--trace); }
+
+  .sub {
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- entradas lado a lado ---- */
+  .inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  @media (max-width: 760px) {
+    .inputs { grid-template-columns: 1fr; }
+  }
+
+  .field {
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--edge);
+  }
+  .field-head .name {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .field-head .hint {
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+
+  textarea {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 14px;
+    resize: vertical;
+    min-height: 300px;
+    width: 100%;
+    tab-size: 4;
+  }
+  textarea::placeholder { color: var(--trace-dim); }
+
+  /* ---- barra de acao ---- */
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  button.run {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--trace);
+    border: none;
+    border-radius: 5px;
+    padding: 12px 26px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: filter 0.15s, transform 0.05s;
+  }
+  button.run:hover { filter: brightness(1.12); }
+  button.run:active { transform: translateY(1px); }
+  button.run:disabled { opacity: 0.5; cursor: wait; }
+
+  .status-line {
+    font-size: 12px;
+    color: var(--ink-dim);
+    letter-spacing: 0.03em;
+  }
+  .status-line.err { color: var(--dead); }
+
+  /* ---- resultados ---- */
+  .results {
+    margin-top: 32px;
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .results.show { display: grid; }
+  @media (max-width: 760px) {
+    .results { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .stat .label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+  }
+  .stat .value {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .stat .value.ok   { color: var(--live); }
+  .stat .value.bad  { color: var(--dead); }
+  .stat .value.warn { color: var(--trace); }
+  .stat .unit {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 4px;
+  }
+
+  /* pilha de status compilou/executou/passou */
+  .flags { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+  .flag { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-dim); flex: none; }
+  .dot.on  { background: var(--live); box-shadow: 0 0 8px var(--live); }
+  .dot.off { background: var(--dead); box-shadow: 0 0 8px var(--dead); }
+
+  /* ---- assinatura: grade de mutantes ---- */
+  .mut-section {
+    margin-top: 32px;
+    display: none;
+  }
+  .mut-section.show { display: block; }
+  .mut-head {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .mut-head .legend { font-size: 11px; text-transform: none; letter-spacing: 0; }
+  .mut-head .legend b { font-weight: 400; }
+  .mut-head .legend .k-dead { color: var(--live); }
+  .mut-head .legend .k-alive { color: var(--dead); }
+
+  .mut-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .cell {
+    width: 34px;
+    height: 34px;
+    border-radius: 4px;
+    border: 1px solid var(--edge);
+    background: var(--panel-2);
+    position: relative;
+    cursor: default;
+  }
+  /* morto = acende verde (o testbench pegou o defeito) */
+  .cell.dead {
+    background: var(--live);
+    border-color: var(--live);
+    box-shadow: 0 0 10px rgba(47,216,164,0.5);
+  }
+  /* sobreviveu = vermelho apagado (defeito passou batido) */
+  .cell.alive {
+    background: transparent;
+    border-color: var(--dead);
+    box-shadow: inset 0 0 0 1px var(--dead);
+  }
+  .cell[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--edge);
+    color: var(--ink);
+    font-size: 11px;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* ---- log ---- */
+  .log-section { margin-top: 32px; display: none; }
+  .log-section.show { display: block; }
+  .log-head {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+  }
+  pre.log {
+    background: #060e17;
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink-dim);
+    overflow-x: auto;
+    max-height: 320px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .by-type {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 8px;
+    line-height: 1.7;
+  }
+  .by-type span { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Bancada RTL <span class="tick">▸</span> cobertura &amp; mutação</h1>
+    <div class="sub">Verilator · testbench Verilog · módulo do TB precisa se chamar <b style="color:var(--trace)">tb</b></div>
+  </header>
+
+  <div class="inputs">
+    <div class="field">
+      <div class="field-head">
+        <span class="name">Módulo RTL</span>
+        <span class="hint">dut.v</span>
+      </div>
+      <textarea id="rtl" spellcheck="false" placeholder="module adder_32bit (
+    input  [31:0] a,
+    input  [31:0] b,
+    output [32:0] sum
+);
+    assign sum = a + b;
+endmodule"></textarea>
+    </div>
+
+    <div class="field">
+      <div class="field-head">
+        <span class="name">Testbench</span>
+        <span class="hint">module tb</span>
+      </div>
+      <textarea id="tb" spellcheck="false" placeholder="module tb;
+    reg  [31:0] a, b;
+    wire [32:0] sum;
+    integer erros = 0;
+
+    adder_32bit dut (.a(a), .b(b), .sum(sum));
+
+    initial begin
+        a = 5; b = 3; #10;
+        if (sum !== 8) erros = erros + 1;
+        // ...
+        if (erros != 0) $fatal(1);
+        $finish;
+    end
+endmodule"></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="run" id="btn">Avaliar</button>
+    <span class="status-line" id="status">pronto</span>
+  </div>
+
+  <!-- estatisticas -->
+  <div class="results" id="results">
+    <div class="stat">
+      <div class="label">Estado</div>
+      <div class="flags" id="flags"></div>
+    </div>
+    <div class="stat">
+      <div class="label">Cobertura</div>
+      <div class="value" id="cov-val">—</div>
+      <div class="unit" id="cov-unit"></div>
+    </div>
+    <div class="stat">
+      <div class="label">Mutation score</div>
+      <div class="value" id="mut-val">—</div>
+      <div class="unit" id="mut-unit"></div>
+    </div>
+    <div class="stat">
+      <div class="label">Mutantes</div>
+      <div class="value" id="mutn-val">—</div>
+      <div class="unit" id="mutn-unit"></div>
+    </div>
+  </div>
+
+  <!-- assinatura: grade de mutantes -->
+  <div class="mut-section" id="mut-section">
+    <div class="mut-head">
+      Mapa de mutantes
+      <span class="legend">
+        <b class="k-dead">■ morto</b> (defeito detectado) ·
+        <b class="k-alive">□ sobreviveu</b> (passou batido)
+      </span>
+    </div>
+    <div class="mut-grid" id="mut-grid"></div>
+  </div>
+
+  <!-- log -->
+  <div class="log-section" id="log-section">
+    <div class="log-head">Saída da simulação</div>
+    <pre class="log" id="log"></pre>
+    <div class="by-type" id="by-type"></div>
+  </div>
+
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+$("btn").addEventListener("click", avaliar);
+
+async function avaliar() {
+  const rtl = $("rtl").value;
+  const tb  = $("tb").value;
+
+  const btn = $("btn");
+  const status = $("status");
+  status.classList.remove("err");
+
+  if (!rtl.trim() || !tb.trim()) {
+    status.textContent = "preencha os dois campos";
+    status.classList.add("err");
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = "compilando e simulando…";
+  $("results").classList.remove("show");
+  $("mut-section").classList.remove("show");
+  $("log-section").classList.remove("show");
+
+  try {
+    const r = await fetch("/avaliar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rtl, tb })
+    });
+    const data = await r.json();
+
+    if (data.erro) {
+      status.textContent = data.erro;
+      status.classList.add("err");
+      btn.disabled = false;
+      return;
+    }
+
+    render(data);
+    status.textContent = "concluído";
+  } catch (e) {
+    status.textContent = "falha de conexão com o backend";
+    status.classList.add("err");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function render(d) {
+  // flags
+  const flags = $("flags");
+  flags.innerHTML = "";
+  flags.appendChild(flag("compilou", d.compilou));
+  flags.appendChild(flag("executou", d.executou));
+  flags.appendChild(flag("passou", d.passou));
+
+  // cobertura
+  if (d.cobertura) {
+    const c = d.cobertura;
+    $("cov-val").textContent = c.pct + "%";
+    $("cov-val").className = "value " + (c.pct >= 80 ? "ok" : c.pct >= 50 ? "warn" : "bad");
+    $("cov-unit").textContent = c.cobertos + " / " + c.total + " pontos";
+    // por tipo
+    const bt = Object.entries(c.por_tipo)
+      .map(([k, v]) => `${k}: <span>${v.cobertos}/${v.total}</span>`)
+      .join("&nbsp;&nbsp;·&nbsp;&nbsp;");
+    $("by-type").innerHTML = bt ? ("cobertura por tipo &nbsp; " + bt) : "";
+  } else {
+    $("cov-val").textContent = "—";
+    $("cov-val").className = "value";
+    $("cov-unit").textContent = "não coletada";
+    $("by-type").innerHTML = "";
+  }
+
+  // mutacao
+  const m = d.mutacao;
+  if (m && m.total > 0) {
+    $("mut-val").textContent = m.score + "%";
+    $("mut-val").className = "value " + (m.score >= 80 ? "ok" : m.score >= 50 ? "warn" : "bad");
+    $("mut-unit").textContent = m.mortos + " mortos / " + m.total;
+    $("mutn-val").textContent = m.total;
+    $("mutn-val").className = "value";
+    $("mutn-unit").textContent = m.sobreviventes + " sobreviveram";
+
+    // grade
+    const grid = $("mut-grid");
+    grid.innerHTML = "";
+    m.detalhe.filter(x => x.status !== "nao_compilou").forEach((x, i) => {
+      const cell = document.createElement("div");
+      cell.className = "cell " + (x.status === "morto" ? "dead" : "alive");
+      cell.setAttribute("data-tip", `${x.desc} — ${x.status}`);
+      grid.appendChild(cell);
+    });
+    $("mut-section").classList.add("show");
+  } else {
+    $("mut-val").textContent = "—";
+    $("mut-val").className = "value";
+    $("mut-unit").textContent = (m && m.aviso) ? m.aviso : "não aplicável";
+    $("mutn-val").textContent = "0";
+    $("mutn-val").className = "value";
+    $("mutn-unit").textContent = "";
+    $("mut-section").classList.remove("show");
+  }
+
+  // log
+  $("log").textContent = d.log || "(sem saída)";
+  $("log-section").classList.add("show");
+
+  $("results").classList.add("show");
+}
+
+function flag(nome, ligado) {
+  const div = document.createElement("div");
+  div.className = "flag";
+  const dot = document.createElement("span");
+  dot.className = "dot " + (ligado ? "on" : "off");
+  const txt = document.createElement("span");
+  txt.textContent = nome;
+  div.appendChild(dot);
+  div.appendChild(txt);
+  return div;
+}
+</script>
+</body>
+</html>
