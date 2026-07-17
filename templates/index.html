@@ -326,13 +326,29 @@
     word-break: break-word;
   }
 
-  .by-type {
-    font-size: 11px;
+  /* ---- cobertura por tipo: cartoes grandes abaixo dos mutantes ---- */
+  .cov-section { margin-top: 32px; display: none; }
+  .cov-section.show { display: block; }
+  .cov-head {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--ink-dim);
-    margin-top: 8px;
-    line-height: 1.7;
+    margin-bottom: 14px;
   }
-  .by-type span { color: var(--ink); }
+  .cov-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 760px) {
+    .cov-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .stat .value.none {
+    font-size: 17px;
+    color: var(--ink-dim);
+    line-height: 2.2;
+  }
 </style>
 </head>
 <body>
@@ -421,17 +437,36 @@ endmodule"></textarea>
     <div class="mut-list" id="mut-list"></div>
   </div>
 
+  <!-- cobertura por tipo (abaixo dos mutantes) -->
+  <div class="cov-section" id="cov-section">
+    <div class="cov-head">Cobertura por tipo</div>
+    <div class="cov-grid" id="cov-grid"></div>
+  </div>
+
   <!-- log -->
   <div class="log-section" id="log-section">
     <div class="log-head">Saída da simulação</div>
     <pre class="log" id="log"></pre>
-    <div class="by-type" id="by-type"></div>
   </div>
 
 </div>
 
 <script>
 const $ = (id) => document.getElementById(id);
+
+// Nomes em portugues dos tipos de cobertura do Verilator
+const NOMES_TIPO = {
+  line:   "Linha",
+  toggle: "Alternância (toggle)",
+  branch: "Desvio (branch)",
+  expr:   "Expressão",
+  user:   "Usuário",
+  assert: "Asserção",
+  outro:  "Outro",
+};
+
+// Ordem de exibicao dos cartoes de cobertura por tipo
+const ORDEM_TIPO = ["line", "branch", "expr", "toggle", "assert", "user"];
 
 $("btn").addEventListener("click", avaliar);
 
@@ -494,16 +529,22 @@ function render(d) {
     $("cov-val").textContent = c.pct + "%";
     $("cov-val").className = "value " + (c.pct >= 80 ? "ok" : c.pct >= 50 ? "warn" : "bad");
     $("cov-unit").textContent = c.cobertos + " / " + c.total + " pontos";
-    // por tipo
-    const bt = Object.entries(c.por_tipo)
-      .map(([k, v]) => `${k}: <span>${v.cobertos}/${v.total}</span>`)
-      .join("&nbsp;&nbsp;·&nbsp;&nbsp;");
-    $("by-type").innerHTML = bt ? ("cobertura por tipo &nbsp; " + bt) : "";
+    // por tipo: cartoes grandes, um para cada tipo + maquina de estados
+    const grid = $("cov-grid");
+    grid.innerHTML = "";
+    Object.entries(c.por_tipo)
+      .sort(([a], [b]) => {
+        const ia = ORDEM_TIPO.indexOf(a), ib = ORDEM_TIPO.indexOf(b);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      })
+      .forEach(([k, v]) => grid.appendChild(covCard(NOMES_TIPO[k] || k, v)));
+    grid.appendChild(covCard("Máquina de estados", c.fsm));
+    $("cov-section").classList.add("show");
   } else {
     $("cov-val").textContent = "—";
     $("cov-val").className = "value";
     $("cov-unit").textContent = "não coletada";
-    $("by-type").innerHTML = "";
+    $("cov-section").classList.remove("show");
   }
 
   // mutacao
@@ -573,6 +614,34 @@ function render(d) {
   $("log-section").classList.add("show");
 
   $("results").classList.add("show");
+}
+
+// Cartao de cobertura: nome, % grande e fracao. Sem dados -> "sem cobertura".
+function covCard(nome, v) {
+  const card = document.createElement("div");
+  card.className = "stat";
+  const label = document.createElement("div");
+  label.className = "label";
+  label.textContent = nome;
+  const value = document.createElement("div");
+  const unit = document.createElement("div");
+  unit.className = "unit";
+  if (v && v.total) {
+    const pct = v.pct !== undefined
+      ? v.pct
+      : Math.round(1000 * v.cobertos / v.total) / 10;
+    value.className = "value " + (pct >= 80 ? "ok" : pct >= 50 ? "warn" : "bad");
+    value.textContent = pct + "%";
+    unit.textContent = v.cobertos + " / " + v.total + " pontos";
+  } else {
+    value.className = "value none";
+    value.textContent = "sem cobertura";
+    unit.textContent = "";
+  }
+  card.appendChild(label);
+  card.appendChild(value);
+  card.appendChild(unit);
+  return card;
 }
 
 function esc(s) {

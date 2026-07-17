@@ -84,6 +84,8 @@ def compilar_e_cobrir(rtl_path, tb_path, work):
         [
             "verilator", "--cc", "--exe", "--build",
             "--timing", "--coverage",
+            # -Wno-fatal: warnings (LATCH, CASEINCOMPLETE...) nao bloqueiam
+            "-Wno-fatal",
             "-Wno-DECLFILENAME", "-Wno-WIDTH", "-Wno-UNOPTFLAT",
             "--Mdir", str(mdir),
             "--top-module", TB_TOP,
@@ -110,7 +112,7 @@ def compilar_e_cobrir(rtl_path, tb_path, work):
     sim_log = (out + err).strip()
 
     # --- cobertura ---
-    cobertura = ler_cobertura(covfile, work)
+    cobertura = ler_cobertura(covfile, rtl_path)
 
     return {
         "compilou": True,
@@ -121,7 +123,7 @@ def compilar_e_cobrir(rtl_path, tb_path, work):
     }
 
 
-def ler_cobertura(covfile, work):
+def ler_cobertura(covfile, rtl_path):
     """
     Roda verilator_coverage e extrai pontos cobertos / total.
     Le direto o coverage.dat como fonte da verdade (o binario e' texto).
@@ -143,7 +145,8 @@ def ler_cobertura(covfile, work):
         total += 1
         if cnt >= 1:  # --annotate-min 1: coberto = exercitado ao menos 1x
             cobertos += 1
-        tm = re.search(r"v_(\w+?)/", linha)
+        # ancorado na chave "page": o caminho do arquivo tambem pode conter "v_"
+        tm = re.search("\x01page\x02v_(\\w+?)/", linha)
         tipo = tm.group(1) if tm else "outro"
         d = por_tipo.setdefault(tipo, {"total": 0, "cobertos": 0})
         d["total"] += 1
@@ -151,7 +154,61 @@ def ler_cobertura(covfile, work):
             d["cobertos"] += 1
 
     pct = round(100.0 * cobertos / total, 1) if total else 0.0
-    return {"cobertos": cobertos, "total": total, "pct": pct, "por_tipo": por_tipo}
+    fsm = cobertura_fsm(rtl_path.read_text(errors="ignore"), covfile)
+    return {
+        "cobertos": cobertos, "total": total, "pct": pct,
+        "por_tipo": por_tipo, "fsm": fsm,
+    }
+
+
+def cobertura_fsm(rtl_texto, covfile):
+    """
+    Cobertura de maquina de estados (o Verilator nao emite esse tipo).
+    Aproximacao: acha no RTL um case cujo seletor e' um registrador (sinal
+    atualizado com <=, o padrao de FSM) e mede a cobertura dos pontos de
+    branch dentro desse case. Sem FSM detectavel -> None ("sem cobertura").
+    """
+    # 1) intervalos de linha dos case de estado no RTL
+    intervalos = []
+    for m in re.finditer(r"\bcase[xz]?\s*\(([^)]+)\)", rtl_texto):
+        ids = re.findall(r"[A-Za-z_]\w*", m.group(1))
+        if not any(re.search(rf"\b{re.escape(s)}\s*<=", rtl_texto) for s in ids):
+            continue  # seletor nao e' registrador: nao parece FSM
+        fim = re.search(r"\bendcase\b", rtl_texto[m.end():])
+        if not fim:
+            continue
+        ini = rtl_texto.count("\n", 0, m.start()) + 1
+        fin = rtl_texto.count("\n", 0, m.end() + fim.end()) + 1
+        intervalos.append((ini, fin))
+    if not intervalos:
+        return None
+
+    # 2) itens do case no coverage.dat: pontos v_line com o=case no dut.v
+    #    (um ponto por braco do case = um por estado da FSM)
+    total = 0
+    cobertos = 0
+    for linha in covfile.read_text(errors="ignore").splitlines():
+        if not linha.startswith("C ") or "\x01page\x02v_line/" not in linha:
+            continue
+        if "\x01o\x02case" not in linha:
+            continue
+        arq = re.search("\x01f\x02([^\x01']*)", linha)
+        num = re.search("\x01l\x02(\d+)", linha)
+        cnt = re.search(r"'\s+(\d+)\s*$", linha)
+        if not (arq and num and cnt) or not arq.group(1).endswith("dut.v"):
+            continue
+        n = int(num.group(1))
+        if not any(a <= n <= b for a, b in intervalos):
+            continue
+        total += 1
+        if int(cnt.group(1)) >= 1:
+            cobertos += 1
+    if total == 0:
+        return None
+    return {
+        "cobertos": cobertos, "total": total,
+        "pct": round(100.0 * cobertos / total, 1),
+    }
 
 
 # --------------------------------------------------------------------------
@@ -160,21 +217,49 @@ def ler_cobertura(covfile, work):
 
 # Operadores de mutacao de primeira ordem, por regex sobre o texto do RTL.
 # Cada tupla: (descricao, regex, substituicao).
-# So se aplica quando o padrao existe no modulo -> mutantes gerados variam.
+# Varias trocas por operador: mesmo um RTL simples (um unico "+") rende os
+# 4 mutantes da rodada, cada um com uma unica alteracao.
 MUTACOES = [
-    ("+ -> -",   r"\+",   "-"),
-    ("- -> +",   r"(?<![<>=!])-(?![>-])", "+"),
-    ("* -> +",   r"\*",   "+"),
-    ("& -> |",   r"&(?!&)", "|"),
-    ("| -> &",   r"\|(?!\|)", "&"),
+    # aritmeticos ("+:"/"-:" de part-select ficam de fora)
+    ("+ -> -",   r"\+(?!:)", "-"),
+    ("+ -> ^",   r"\+(?!:)", "^"),
+    ("+ -> |",   r"\+(?!:)", "|"),
+    ("+ -> &",   r"\+(?!:)", "&"),
+    ("- -> +",   r"(?<![<>=!])-(?![>:-])", "+"),
+    ("- -> ^",   r"(?<![<>=!])-(?![>:-])", "^"),
+    # "*" de multiplicacao apenas: exclui "@(*)", atributos "(* *)" e "**"
+    ("* -> +",   r"(?<![(*])\*(?![*)])", "+"),
+    ("* -> -",   r"(?<![(*])\*(?![*)])", "-"),
+    # bit a bit
+    ("& -> |",   r"(?<!&)&(?!&)", "|"),
+    ("& -> ^",   r"(?<!&)&(?!&)", "^"),
+    ("| -> &",   r"(?<!\|)\|(?!\|)", "&"),
+    ("| -> ^",   r"(?<!\|)\|(?!\|)", "^"),
+    ("^ -> &",   r"\^(?!~)", "&"),
+    ("^ -> |",   r"\^(?!~)", "|"),
+    # logicos
     ("&& -> ||", r"&&",   "||"),
     ("|| -> &&", r"\|\|", "&&"),
-    ("== -> !=", r"==",   "!="),
-    ("!= -> ==", r"!=",   "=="),
+    # igualdade (=== / !== ficam de fora)
+    ("== -> !=", r"(?<![=!<>])==(?!=)", "!="),
+    ("!= -> ==", r"(?<!=)!=(?!=)", "=="),
+    # relacionais
     ("< -> >=",  r"(?<![<>=])<(?![<=])", ">="),
     ("> -> <=",  r"(?<![<>=])>(?![>=])", "<="),
     (">= -> <",  r">=",   "<"),
-    ("<= -> >",  r"<=",   ">"),
+    ("<= -> >",  r"(?<![<>=])<=", ">"),
+    # deslocamentos
+    ("<< -> >>", r"(?<!<)<<(?!<)", ">>"),
+    (">> -> <<", r"(?<!>)>>(?!>)", "<<"),
+    # constantes com base explicita (ex: 2'd1 -> 2'd0): essenciais para FSM,
+    # onde quase nao ha operador aritmetico para mutar
+    ("constante -> 0", r"'([bdh])\s*[1-9a-fA-F][0-9a-fA-F_]*\b",
+     lambda m: "'" + m.group(1) + "0"),
+    ("constante 0 -> 1", r"'([bdh])\s*0+\b",
+     lambda m: "'" + m.group(1) + "1"),
+    # ramos de um ?: simples trocados (cond ? A : B -> cond ? B : A)
+    ("?: ramos trocados", r"\?\s*([A-Za-z_]\w*)\s*:\s*([A-Za-z_]\w*)",
+     lambda m: "? " + m.group(2) + " : " + m.group(1)),
 ]
 
 
@@ -185,11 +270,20 @@ def gerar_mutantes(rtl_texto):
     Retorna lista de dicts com o texto mutado e a linha antes/depois da troca.
     """
     linhas_orig = rtl_texto.splitlines()
+    # Trocar operador dentro de comentario nao muda o circuito: o mutante
+    # "sobreviveria" sem ser defeito. Ignora esses trechos.
+    comentarios = [
+        m.span() for m in re.finditer(r"//[^\n]*|/\*.*?\*/", rtl_texto, re.S)
+    ]
+    em_comentario = lambda i: any(a <= i < b for a, b in comentarios)
     mutantes = []
     for desc, pat, repl in MUTACOES:
         for m in re.finditer(pat, rtl_texto):
             i, j = m.start(), m.end()
-            mut = rtl_texto[:i] + repl + rtl_texto[j:]
+            if em_comentario(i):
+                continue
+            novo = repl(m) if callable(repl) else repl
+            mut = rtl_texto[:i] + novo + rtl_texto[j:]
             if mut == rtl_texto:
                 continue
             num = rtl_texto.count("\n", 0, i) + 1
@@ -249,7 +343,7 @@ def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
 
         rc, out, err = run(
             [
-                "verilator", "--binary", "--timing",
+                "verilator", "--binary", "--timing", "-Wno-fatal",
                 "-Wno-DECLFILENAME", "-Wno-WIDTH", "-Wno-UNOPTFLAT",
                 "--Mdir", str(mdir), "--top-module", TB_TOP, "-o", "mut",
                 str(mut_file), str(tb_path),
@@ -323,11 +417,19 @@ def avaliar():
 
         resultado = compilar_e_cobrir(rtl_path, tb_path, work)
 
-        # So roda mutacao se compilou e executou (senao nao faz sentido)
-        if resultado["compilou"] and resultado["executou"]:
-            resultado["mutacao"] = testar_mutacao(rtl_txt, tb_path, work)
-        else:
+        # Mutacao exige testbench passando no RTL original: se ja falha nele,
+        # todo mutante "morre" de graca e o score vira 100% enganoso.
+        if not (resultado["compilou"] and resultado["executou"]):
             resultado["mutacao"] = None
+        elif not resultado["passou"]:
+            resultado["mutacao"] = {
+                "total": 0, "mortos": 0, "sobreviventes": 0, "score": None,
+                "detalhe": [],
+                "aviso": "testbench reprovou no RTL original: "
+                         "mutação não avaliada",
+            }
+        else:
+            resultado["mutacao"] = testar_mutacao(rtl_txt, tb_path, work)
 
         return jsonify(resultado)
     finally:
