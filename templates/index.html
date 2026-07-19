@@ -172,6 +172,30 @@
   }
   .status-line.err { color: var(--dead); }
 
+  /* identificacao da rodada (para o historico/CSV) */
+  .meta-input {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 5px;
+    padding: 11px 12px;
+    outline: none;
+  }
+  .meta-input::placeholder { color: var(--ink-dim); }
+  .meta-input:focus { border-color: var(--trace); }
+  select.meta-input { cursor: pointer; }
+
+  a.hist-link {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--ink-dim);
+  }
+  a.hist-link:hover { color: var(--trace); border-color: var(--trace); }
+
   /* ---- resultados ---- */
   .results {
     margin-top: 32px;
@@ -398,8 +422,17 @@ endmodule"></textarea>
   </div>
 
   <div class="actions">
+    <input class="meta-input" id="modulo" placeholder="nome do módulo (opcional)">
+    <select class="meta-input" id="estrategia">
+      <option value="">estratégia (opcional)</option>
+      <option>zero-shot</option>
+      <option>few-shot</option>
+      <option>role-prompting</option>
+      <option>self-planning</option>
+    </select>
     <button class="run" id="btn">Avaliar</button>
     <span class="status-line" id="status">pronto</span>
+    <a class="hist-link" href="/historico.csv">histórico (CSV)</a>
   </div>
 
   <!-- estatisticas -->
@@ -494,7 +527,11 @@ async function avaliar() {
     const r = await fetch("/avaliar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rtl, tb })
+      body: JSON.stringify({
+        rtl, tb,
+        modulo: $("modulo").value.trim(),
+        estrategia: $("estrategia").value
+      })
     });
     const data = await r.json();
 
@@ -529,15 +566,21 @@ function render(d) {
     $("cov-val").textContent = c.pct + "%";
     $("cov-val").className = "value " + (c.pct >= 80 ? "ok" : c.pct >= 50 ? "warn" : "bad");
     $("cov-unit").textContent = c.cobertos + " / " + c.total + " pontos";
-    // por tipo: cartoes grandes, um para cada tipo + maquina de estados
+    // por tipo: sempre os 4 cartoes; tipo sem pontos no modulo vira
+    // "sem cobertura", igual ao de maquina de estados
     const grid = $("cov-grid");
     grid.innerHTML = "";
-    Object.entries(c.por_tipo)
-      .sort(([a], [b]) => {
+    const PRINCIPAIS = ["line", "branch", "toggle"];
+    PRINCIPAIS.forEach((k) =>
+      grid.appendChild(covCard(NOMES_TIPO[k], c.por_tipo[k])));
+    // tipos extras que o Verilator eventualmente emitir (expr, user...)
+    Object.keys(c.por_tipo)
+      .filter((k) => !PRINCIPAIS.includes(k))
+      .sort((a, b) => {
         const ia = ORDEM_TIPO.indexOf(a), ib = ORDEM_TIPO.indexOf(b);
         return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
       })
-      .forEach(([k, v]) => grid.appendChild(covCard(NOMES_TIPO[k] || k, v)));
+      .forEach((k) => grid.appendChild(covCard(NOMES_TIPO[k] || k, c.por_tipo[k])));
     grid.appendChild(covCard("Máquina de estados", c.fsm));
     $("cov-section").classList.add("show");
   } else {

@@ -15,15 +15,17 @@ Todo o conhecimento acumulado esta aqui:
   * modulo do testbench se chama sempre "tb"
 """
 
+import csv
 import os
 import re
 import shutil
 import subprocess
 import tempfile
 import uuid
+from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 
 app = Flask(__name__)
 
@@ -39,6 +41,54 @@ TIMEOUT = 60
 
 # Quantos mutantes validos (que compilam) avaliar por rodada.
 MAX_MUTANTES = 4
+
+# Teto de compilacoes de mutante por rodada (validos ou nao), para limitar
+# o tempo total da requisicao.
+MAX_TENTATIVAS = 16
+
+# Historico de avaliacoes (uma linha por rodada), para as tabelas
+# comparativas do experimento. Exportado em /historico.csv.
+HISTORICO = BASE / "historico.csv"
+
+
+def registrar_historico(modulo, estrategia, resultado):
+    """Anexa a avaliacao ao CSV. Nunca derruba a requisicao se falhar."""
+    try:
+        c = resultado.get("cobertura") or {}
+        por_tipo = c.get("por_tipo") or {}
+
+        def pct_tipo(t):
+            d = por_tipo.get(t)
+            if not d or not d["total"]:
+                return ""
+            return round(100.0 * d["cobertos"] / d["total"], 1)
+
+        fsm = c.get("fsm")
+        m = resultado.get("mutacao") or {}
+        linha = {
+            "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "modulo": modulo,
+            "estrategia": estrategia,
+            "compilou": resultado["compilou"],
+            "executou": resultado["executou"],
+            "passou": resultado["passou"],
+            "cobertura_pct": c.get("pct", ""),
+            "linha_pct": pct_tipo("line"),
+            "alternancia_pct": pct_tipo("toggle"),
+            "desvio_pct": pct_tipo("branch"),
+            "fsm_pct": fsm["pct"] if fsm else "",
+            "mutantes_avaliados": m.get("total", ""),
+            "mutantes_mortos": m.get("mortos", ""),
+            "mutation_score": "" if m.get("score") is None else m.get("score"),
+        }
+        novo = not HISTORICO.exists()
+        with open(HISTORICO, "a", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=list(linha))
+            if novo:
+                w.writeheader()
+            w.writerow(linha)
+    except OSError:
+        pass
 
 
 # --------------------------------------------------------------------------
@@ -132,11 +182,16 @@ def ler_cobertura(covfile, rtl_path):
         return None
 
     # Conta pontos: cada linha "C '...' N" e' um ponto com contagem N.
+    # So pontos do dut.v: cobertura mede o quanto DO MODULO o testbench
+    # exercitou — pontos do proprio tb.v nao entram na conta.
     total = 0
     cobertos = 0
     por_tipo = {}  # v_line / v_toggle / v_branch ...
     for linha in covfile.read_text(errors="ignore").splitlines():
         if not linha.startswith("C "):
+            continue
+        arq = re.search("\x01f\x02([^\x01']*)", linha)
+        if not arq or not arq.group(1).endswith("dut.v"):
             continue
         m = re.search(r"'.*'\s+(\d+)\s*$", linha)
         if not m:
@@ -193,7 +248,7 @@ def cobertura_fsm(rtl_texto, covfile):
         if "\x01o\x02case" not in linha:
             continue
         arq = re.search("\x01f\x02([^\x01']*)", linha)
-        num = re.search("\x01l\x02(\d+)", linha)
+        num = re.search("\x01l\x02(\\d+)", linha)
         cnt = re.search(r"'\s+(\d+)\s*$", linha)
         if not (arq and num and cnt) or not arq.group(1).endswith("dut.v"):
             continue
@@ -216,43 +271,33 @@ def cobertura_fsm(rtl_texto, covfile):
 # --------------------------------------------------------------------------
 
 # Operadores de mutacao de primeira ordem, por regex sobre o texto do RTL.
-# Cada tupla: (descricao, regex, substituicao).
-# Varias trocas por operador: mesmo um RTL simples (um unico "+") rende os
-# 4 mutantes da rodada, cada um com uma unica alteracao.
+# Um ponto mutavel = uma ocorrencia na logica (always/assign); cada ponto
+# gera no maximo UM mutante — sem completar artificialmente ate 4.
 MUTACOES = [
     # aritmeticos ("+:"/"-:" de part-select ficam de fora)
     ("+ -> -",   r"\+(?!:)", "-"),
-    ("+ -> ^",   r"\+(?!:)", "^"),
-    ("+ -> |",   r"\+(?!:)", "|"),
-    ("+ -> &",   r"\+(?!:)", "&"),
     ("- -> +",   r"(?<![<>=!])-(?![>:-])", "+"),
-    ("- -> ^",   r"(?<![<>=!])-(?![>:-])", "^"),
     # "*" de multiplicacao apenas: exclui "@(*)", atributos "(* *)" e "**"
     ("* -> +",   r"(?<![(*])\*(?![*)])", "+"),
-    ("* -> -",   r"(?<![(*])\*(?![*)])", "-"),
     # bit a bit
     ("& -> |",   r"(?<!&)&(?!&)", "|"),
-    ("& -> ^",   r"(?<!&)&(?!&)", "^"),
     ("| -> &",   r"(?<!\|)\|(?!\|)", "&"),
-    ("| -> ^",   r"(?<!\|)\|(?!\|)", "^"),
     ("^ -> &",   r"\^(?!~)", "&"),
-    ("^ -> |",   r"\^(?!~)", "|"),
     # logicos
     ("&& -> ||", r"&&",   "||"),
     ("|| -> &&", r"\|\|", "&&"),
     # igualdade (=== / !== ficam de fora)
     ("== -> !=", r"(?<![=!<>])==(?!=)", "!="),
     ("!= -> ==", r"(?<!=)!=(?!=)", "=="),
-    # relacionais
+    # relacionais; "<=" fica de fora: dentro de always e' quase sempre
+    # atribuicao nao-bloqueante, e o mutante nunca compila
     ("< -> >=",  r"(?<![<>=])<(?![<=])", ">="),
     ("> -> <=",  r"(?<![<>=])>(?![>=])", "<="),
     (">= -> <",  r">=",   "<"),
-    ("<= -> >",  r"(?<![<>=])<=", ">"),
     # deslocamentos
     ("<< -> >>", r"(?<!<)<<(?!<)", ">>"),
     (">> -> <<", r"(?<!>)>>(?!>)", "<<"),
-    # constantes com base explicita (ex: 2'd1 -> 2'd0): essenciais para FSM,
-    # onde quase nao ha operador aritmetico para mutar
+    # constantes com base explicita (ex: 2'd1 -> 2'd0)
     ("constante -> 0", r"'([bdh])\s*[1-9a-fA-F][0-9a-fA-F_]*\b",
      lambda m: "'" + m.group(1) + "0"),
     ("constante 0 -> 1", r"'([bdh])\s*0+\b",
@@ -260,27 +305,72 @@ MUTACOES = [
     # ramos de um ?: simples trocados (cond ? A : B -> cond ? B : A)
     ("?: ramos trocados", r"\?\s*([A-Za-z_]\w*)\s*:\s*([A-Za-z_]\w*)",
      lambda m: "? " + m.group(2) + " : " + m.group(1)),
+    # inversao de condicao simples: if (x) -> if (!x) e vice-versa
+    ("if(x) -> if(!x)", r"\bif\s*\(\s*([A-Za-z_]\w*)\s*\)",
+     lambda m: "if (!" + m.group(1) + ")"),
+    ("if(!x) -> if(x)", r"\bif\s*\(\s*!\s*([A-Za-z_]\w*)\s*\)",
+     lambda m: "if (" + m.group(1) + ")"),
 ]
+
+
+def regioes_de_logica(rtl_texto):
+    """
+    Spans [ini, fim) onde mutacao e' permitida: corpo de always* e de
+    assign. Fora deles (portas, larguras [W-1:0], localparam, typedef)
+    um operador trocado gera mutante equivalente ou invalido.
+
+    Heuristica por ancoras, sem parser: um bloco always vai da palavra
+    "always" ate a proxima palavra-chave estrutural do modulo (outro
+    always, assign, declaracao, endmodule...) — nenhuma delas pode
+    aparecer dentro do proprio corpo do always. Um assign vai ate o ";".
+    """
+    # comentarios viram espacos (posicoes preservadas)
+    limpo = re.sub(
+        r"//[^\n]*|/\*.*?\*/",
+        lambda m: " " * len(m.group(0)),
+        rtl_texto, flags=re.S,
+    )
+    ancoras = list(re.finditer(
+        r"\b(always(?:_ff|_comb|_latch)?|assign|initial|function|endfunction|"
+        r"task|endtask|generate|endgenerate|module|endmodule|localparam|"
+        r"parameter|input|output|inout|wire|reg|logic|integer|genvar|"
+        r"typedef)\b",
+        limpo,
+    ))
+    regioes = []
+    for k, a in enumerate(ancoras):
+        kw = a.group(1)
+        if kw == "assign":
+            fim = limpo.find(";", a.end())
+            if fim >= 0:
+                regioes.append((a.end(), fim))
+        elif kw.startswith("always"):
+            fim = ancoras[k + 1].start() if k + 1 < len(ancoras) else len(limpo)
+            regioes.append((a.end(), fim))
+    return regioes
 
 
 def gerar_mutantes(rtl_texto):
     """
-    Gera mutantes de primeira ordem: para cada ocorrencia de cada operador,
-    uma copia do RTL com apenas aquela ocorrencia trocada.
-    Retorna lista de dicts com o texto mutado e a linha antes/depois da troca.
+    Gera candidatos de primeira ordem: um por ponto mutavel (ocorrencia de
+    operador DENTRO de always/assign), cada um com apenas aquela ocorrencia
+    trocada. Ordem de varredura do arquivo — deterministica.
     """
     linhas_orig = rtl_texto.splitlines()
-    # Trocar operador dentro de comentario nao muda o circuito: o mutante
-    # "sobreviveria" sem ser defeito. Ignora esses trechos.
+    regioes = regioes_de_logica(rtl_texto)
+    dentro = lambda i: any(a <= i < b for a, b in regioes)
+    # As regioes ja nasceram sem comentarios de fora, mas um comentario no
+    # meio de um always ainda esta dentro do span: ignora tambem.
     comentarios = [
         m.span() for m in re.finditer(r"//[^\n]*|/\*.*?\*/", rtl_texto, re.S)
     ]
     em_comentario = lambda i: any(a <= i < b for a, b in comentarios)
+
     mutantes = []
     for desc, pat, repl in MUTACOES:
         for m in re.finditer(pat, rtl_texto):
             i, j = m.start(), m.end()
-            if em_comentario(i):
+            if not dentro(i) or em_comentario(i):
                 continue
             novo = repl(m) if callable(repl) else repl
             mut = rtl_texto[:i] + novo + rtl_texto[j:]
@@ -288,54 +378,47 @@ def gerar_mutantes(rtl_texto):
                 continue
             num = rtl_texto.count("\n", 0, i) + 1
             mutantes.append({
+                "pos": i,
                 "desc": desc,
                 "texto": mut,
                 "linha": num,
                 "original": linhas_orig[num - 1].strip(),
                 "mutado": mut.splitlines()[num - 1].strip(),
             })
+    mutantes.sort(key=lambda mt: mt["pos"])
     return mutantes
-
-
-def ordenar_diverso(mutantes):
-    """
-    Intercala os mutantes por operador (round-robin) para que os primeiros
-    avaliados cubram operadores diferentes, e nao 4 variantes do mesmo "+".
-    """
-    por_op = {}
-    for mt in mutantes:
-        por_op.setdefault(mt["desc"], []).append(mt)
-    filas = list(por_op.values())
-    ordenado = []
-    while filas:
-        filas = [f for f in filas if f]
-        for f in filas:
-            if f:
-                ordenado.append(f.pop(0))
-    return ordenado
 
 
 def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
     """
-    Avalia ate max_mutantes mutantes validos (que compilam), em ordem
-    diversificada por operador. Para cada um: compila com o TB e roda.
+    Avalia os primeiros max_mutantes mutantes validos (que compilam), na
+    ordem de varredura do arquivo. Mutante que nao compila e' descartado
+    sem contar; o proximo da fila entra no lugar. Menos de max_mutantes
+    pontos mutaveis na logica => avalia quantos houver.
     exit!=0 => testbench detectou a troca => mutante morto.
     Usa --binary (nao precisa de cobertura aqui) => mais rapido.
     """
-    candidatos = ordenar_diverso(gerar_mutantes(rtl_texto))
+    candidatos = gerar_mutantes(rtl_texto)
     if not candidatos:
         return {
             "total": 0, "mortos": 0, "sobreviventes": 0, "score": None,
-            "detalhe": [], "aviso": "nenhum operador mutavel encontrado no RTL",
+            "detalhe": [],
+            "aviso": "nenhum operador mutavel na lógica (always/assign) do RTL",
         }
 
     mortos = 0
     sobreviventes = 0
     detalhe = []
+    tentativas = 0
 
     for cand in candidatos:
         if mortos + sobreviventes >= max_mutantes:
             break
+        # limite de compilacoes para nao estourar o tempo da requisicao
+        # num RTL onde muitos candidatos seguidos nao compilam
+        if tentativas >= MAX_TENTATIVAS:
+            break
+        tentativas += 1
 
         mdir = build_dir(work)
         mut_file = mdir / "mut.v"
@@ -431,9 +514,22 @@ def avaliar():
         else:
             resultado["mutacao"] = testar_mutacao(rtl_txt, tb_path, work)
 
+        registrar_historico(
+            data.get("modulo", "").strip(),
+            data.get("estrategia", "").strip(),
+            resultado,
+        )
         return jsonify(resultado)
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+@app.route("/historico.csv")
+def historico():
+    if not HISTORICO.exists():
+        return "nenhuma avaliação registrada ainda", 404
+    return send_file(HISTORICO, as_attachment=True,
+                     download_name="historico.csv")
 
 
 if __name__ == "__main__":
