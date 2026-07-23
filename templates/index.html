@@ -22,12 +22,13 @@
 
   * { box-sizing: border-box; }
 
-  html, body { margin: 0; height: 100%; }
+  html, body { margin: 0; min-height: 100%; }
 
   body {
     background:
       radial-gradient(ellipse 120% 80% at 50% -10%, #10233a 0%, var(--bg) 55%),
       var(--bg);
+    background-attachment: fixed;
     color: var(--ink);
     font-family: var(--mono);
     font-size: 14px;
@@ -171,30 +172,6 @@
     letter-spacing: 0.03em;
   }
   .status-line.err { color: var(--dead); }
-
-  /* identificacao da rodada (para o historico/CSV) */
-  .meta-input {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--ink);
-    background: var(--panel);
-    border: 1px solid var(--edge);
-    border-radius: 5px;
-    padding: 11px 12px;
-    outline: none;
-  }
-  .meta-input::placeholder { color: var(--ink-dim); }
-  .meta-input:focus { border-color: var(--trace); }
-  select.meta-input { cursor: pointer; }
-
-  a.hist-link {
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--ink-dim);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--ink-dim);
-  }
-  a.hist-link:hover { color: var(--trace); border-color: var(--trace); }
 
   /* ---- resultados ---- */
   .results {
@@ -422,17 +399,8 @@ endmodule"></textarea>
   </div>
 
   <div class="actions">
-    <input class="meta-input" id="modulo" placeholder="nome do módulo (opcional)">
-    <select class="meta-input" id="estrategia">
-      <option value="">estratégia (opcional)</option>
-      <option>zero-shot</option>
-      <option>few-shot</option>
-      <option>role-prompting</option>
-      <option>self-planning</option>
-    </select>
     <button class="run" id="btn">Avaliar</button>
     <span class="status-line" id="status">pronto</span>
-    <a class="hist-link" href="/historico.csv">histórico (CSV)</a>
   </div>
 
   <!-- estatisticas -->
@@ -440,11 +408,6 @@ endmodule"></textarea>
     <div class="stat">
       <div class="label">Estado</div>
       <div class="flags" id="flags"></div>
-    </div>
-    <div class="stat">
-      <div class="label">Cobertura</div>
-      <div class="value" id="cov-val">—</div>
-      <div class="unit" id="cov-unit"></div>
     </div>
     <div class="stat">
       <div class="label">Mutation score</div>
@@ -456,6 +419,17 @@ endmodule"></textarea>
       <div class="value" id="mutn-val">—</div>
       <div class="unit" id="mutn-unit"></div>
     </div>
+    <div class="stat">
+      <div class="label">Cobertura</div>
+      <div class="value" id="cov-val">—</div>
+      <div class="unit" id="cov-unit"></div>
+    </div>
+  </div>
+
+  <!-- cobertura por tipo (antes dos mutantes) -->
+  <div class="cov-section" id="cov-section">
+    <div class="cov-head">Cobertura por tipo</div>
+    <div class="cov-grid" id="cov-grid"></div>
   </div>
 
   <!-- mutantes: o que foi trocado e o veredito de cada um -->
@@ -468,12 +442,6 @@ endmodule"></textarea>
       </span>
     </div>
     <div class="mut-list" id="mut-list"></div>
-  </div>
-
-  <!-- cobertura por tipo (abaixo dos mutantes) -->
-  <div class="cov-section" id="cov-section">
-    <div class="cov-head">Cobertura por tipo</div>
-    <div class="cov-grid" id="cov-grid"></div>
   </div>
 
   <!-- log -->
@@ -527,11 +495,7 @@ async function avaliar() {
     const r = await fetch("/avaliar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        rtl, tb,
-        modulo: $("modulo").value.trim(),
-        estrategia: $("estrategia").value
-      })
+      body: JSON.stringify({ rtl, tb })
     });
     const data = await r.json();
 
