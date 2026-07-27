@@ -61,28 +61,70 @@
 
   header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 16px;
     padding-bottom: 20px;
-    border-bottom: 1px solid var(--edge);
+    position: relative;
     flex-wrap: wrap;
+  }
+  /* filete divisor com degrade ambar -> borda */
+  header::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      var(--trace) 0%, var(--edge) 34%, var(--edge) 100%);
+    opacity: 0.8;
+  }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+
+  /* marca: tela de osciloscopio com traco ambar brilhante */
+  .scope-mark {
+    width: 30px; height: 30px; flex: none;
+    filter: drop-shadow(0 0 6px rgba(245, 185, 66, 0.45));
+  }
+  .scope-mark .frame {
+    fill: rgba(245, 185, 66, 0.04);
+    stroke: var(--edge); stroke-width: 1.5;
+  }
+  .scope-mark .trace {
+    fill: none; stroke: var(--trace); stroke-width: 2.2;
+    stroke-linecap: round; stroke-linejoin: round;
   }
 
   h1 {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     margin: 0;
     color: var(--ink);
   }
-  h1 .tick { color: var(--trace); }
+  h1 .tick {
+    color: var(--trace);
+    text-shadow: 0 0 8px rgba(245, 185, 66, 0.7);
+  }
 
   .sub {
     font-size: 12px;
     color: var(--ink-dim);
     letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 13px;
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+  }
+  .sub .live {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--live);
+    box-shadow: 0 0 8px var(--live);
+    flex: none;
   }
 
   /* ---- entradas lado a lado ---- */
@@ -91,7 +133,9 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-top: 24px;
+    align-items: start;   /* colunas com alturas independentes */
   }
+  .col { display: flex; flex-direction: column; }
   @media (max-width: 760px) {
     .inputs { grid-template-columns: 1fr; }
   }
@@ -103,6 +147,8 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    resize: vertical;      /* redimensiona o cartao inteiro */
+    min-height: 340px;
   }
 
   .field-head {
@@ -133,12 +179,31 @@
     font-size: 13px;
     line-height: 1.6;
     padding: 14px;
-    resize: vertical;
-    min-height: 300px;
+    resize: none;
+    flex: 1;             /* preenche a altura do cartao */
+    min-height: 0;
     width: 100%;
     tab-size: 4;
+    overflow: auto;
   }
   textarea::placeholder { color: var(--trace-dim); }
+
+  /* barras de rolagem no tema (finas, escuras, sem setas) */
+  textarea, pre.log { scrollbar-width: thin; scrollbar-color: var(--edge) transparent; }
+  textarea::-webkit-scrollbar,
+  pre.log::-webkit-scrollbar { width: 10px; height: 10px; }
+  textarea::-webkit-scrollbar-track,
+  pre.log::-webkit-scrollbar-track { background: transparent; }
+  textarea::-webkit-scrollbar-thumb,
+  pre.log::-webkit-scrollbar-thumb {
+    background: var(--edge);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  textarea::-webkit-scrollbar-thumb:hover,
+  pre.log::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); }
+  textarea::-webkit-scrollbar-corner { background: transparent; }
 
   /* ---- barra de acao ---- */
   .actions {
@@ -356,23 +421,29 @@
 <div class="wrap">
 
   <header>
-    <h1>Bancada RTL <span class="tick">▸</span> cobertura &amp; mutação</h1>
-    <div class="sub">Verilator · testbench Verilog · módulo do TB precisa se chamar <b style="color:var(--trace)">tb</b></div>
+    <div class="brand">
+      <svg class="scope-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect class="frame" x="1.5" y="5" width="29" height="22" rx="4"/>
+        <path class="trace" d="M5 17 H11 L14 9 L17 24 L20 16 H27"/>
+      </svg>
+      <h1>Bancada RTL <span class="tick">▸</span> cobertura &amp; mutação</h1>
+    </div>
   </header>
 
   <div class="inputs">
-    <div class="field">
-      <div class="field-head">
-        <span class="name">Módulo RTL</span>
-        <span class="hint">dut.v</span>
+    <div class="col">
+      <div class="field">
+        <div class="field-head">
+          <span class="name">Módulo RTL</span>
+          <span class="hint">dut.v</span>
+        </div>
+        <textarea id="rtl" spellcheck="false"></textarea>
       </div>
-      <textarea id="rtl" spellcheck="false" placeholder="module adder_32bit (
-    input  [31:0] a,
-    input  [31:0] b,
-    output [32:0] sum
-);
-    assign sum = a + b;
-endmodule"></textarea>
+
+      <div class="actions">
+        <button class="run" id="btn">Avaliar</button>
+        <span class="status-line" id="status">Aguardando módulo e testbench</span>
+      </div>
     </div>
 
     <div class="field">
@@ -380,27 +451,8 @@ endmodule"></textarea>
         <span class="name">Testbench</span>
         <span class="hint">module tb</span>
       </div>
-      <textarea id="tb" spellcheck="false" placeholder="module tb;
-    reg  [31:0] a, b;
-    wire [32:0] sum;
-    integer erros = 0;
-
-    adder_32bit dut (.a(a), .b(b), .sum(sum));
-
-    initial begin
-        a = 5; b = 3; #10;
-        if (sum !== 8) erros = erros + 1;
-        // ...
-        if (erros != 0) $fatal(1);
-        $finish;
-    end
-endmodule"></textarea>
+      <textarea id="tb" spellcheck="false"></textarea>
     </div>
-  </div>
-
-  <div class="actions">
-    <button class="run" id="btn">Avaliar</button>
-    <span class="status-line" id="status">pronto</span>
   </div>
 
   <!-- estatisticas -->
@@ -480,13 +532,13 @@ async function avaliar() {
   status.classList.remove("err");
 
   if (!rtl.trim() || !tb.trim()) {
-    status.textContent = "preencha os dois campos";
+    status.textContent = "Preencha o módulo e o testbench";
     status.classList.add("err");
     return;
   }
 
   btn.disabled = true;
-  status.textContent = "compilando e simulando…";
+  status.textContent = "Compilando e executando…";
   $("results").classList.remove("show");
   $("mut-section").classList.remove("show");
   $("log-section").classList.remove("show");
@@ -507,9 +559,9 @@ async function avaliar() {
     }
 
     render(data);
-    status.textContent = "concluído";
+    status.textContent = "Avaliação concluída";
   } catch (e) {
-    status.textContent = "falha de conexão com o backend";
+    status.textContent = "Falha ao conectar com o servidor";
     status.classList.add("err");
   } finally {
     btn.disabled = false;
