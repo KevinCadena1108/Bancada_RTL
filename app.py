@@ -389,16 +389,60 @@ def gerar_mutantes(rtl_texto):
     return mutantes
 
 
+def selecionar_espalhados(candidatos, n):
+    """
+    Reordena os candidatos para amostrar regioes DIFERENTES do modulo, em vez
+    de pegar os primeiros n do topo do arquivo (que num modulo grande caem
+    todos no mesmo bloco — p.ex. so o reset).
+
+    Divide os pontos mutaveis em n faixas por posicao no arquivo
+    (inicio/meio/fim) e intercala (round-robin) uma faixa de cada vez. Assim
+    os primeiros da fila cobrem trechos distintos do modulo; se um candidato
+    nao compilar, o proximo da fila ja vem de outra regiao, mantendo o
+    espalhamento e servindo de reserva. Desempate por operador dentro da
+    faixa, para variar tambem o tipo de mutacao. Deterministica.
+    """
+    if not candidatos:
+        return []
+    ordenados = sorted(candidatos, key=lambda m: m["pos"])
+    lo, hi = ordenados[0]["pos"], ordenados[-1]["pos"]
+    span = max(hi - lo, 1)
+    faixas = [[] for _ in range(n)]
+    for m in ordenados:
+        idx = min(n - 1, (m["pos"] - lo) * n // span)
+        faixas[idx].append(m)
+    # dentro de cada faixa, varia o operador: agrupa por desc e intercala
+    for k, f in enumerate(faixas):
+        por_op = {}
+        for m in f:
+            por_op.setdefault(m["desc"], []).append(m)
+        filas = list(por_op.values())
+        rr = []
+        while any(filas):
+            for fila in filas:
+                if fila:
+                    rr.append(fila.pop(0))
+        faixas[k] = rr
+    # round-robin entre as faixas: 1 do inicio, 1 do meio, 1 do fim, ...
+    saida = []
+    while any(faixas):
+        for f in faixas:
+            if f:
+                saida.append(f.pop(0))
+    return saida
+
+
 def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
     """
-    Avalia os primeiros max_mutantes mutantes validos (que compilam), na
-    ordem de varredura do arquivo. Mutante que nao compila e' descartado
-    sem contar; o proximo da fila entra no lugar. Menos de max_mutantes
-    pontos mutaveis na logica => avalia quantos houver.
+    Avalia max_mutantes mutantes validos (que compilam), amostrando regioes
+    distintas do modulo (ver selecionar_espalhados) em vez do topo do arquivo.
+    Mutante que nao compila e' descartado sem contar; o proximo da fila
+    (ja de outra regiao) entra no lugar. Menos de max_mutantes pontos
+    mutaveis na logica => avalia quantos houver.
     exit!=0 => testbench detectou a troca => mutante morto.
     Usa --binary (nao precisa de cobertura aqui) => mais rapido.
     """
-    candidatos = gerar_mutantes(rtl_texto)
+    candidatos = selecionar_espalhados(gerar_mutantes(rtl_texto), max_mutantes)
     if not candidatos:
         return {
             "total": 0, "mortos": 0, "sobreviventes": 0, "score": None,
