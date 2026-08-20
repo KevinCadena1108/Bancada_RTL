@@ -511,6 +511,259 @@ def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
 
 
 # --------------------------------------------------------------------------
+# Indice de Complexidade Combinada para Verificacao (ICV)
+#
+# Metrica SO do DUT (texto do modulo RTL). Combina 4 pontuacoes:
+#   ICV = P_LOC*0.30 + P_FSM*0.30 + P_IO*0.20 + P_LOG*0.20
+# Cada componente e' extraido por heuristica de texto (sem parser Verilog),
+# entao P_FSM e P_LOG sao aproximados — a tela mostra os brutos para auditoria.
+# --------------------------------------------------------------------------
+
+def _sem_comentarios(txt):
+    """Remove /* */ e // preservando as quebras de linha (para contar LOC)."""
+    txt = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), txt, flags=re.S)
+    txt = re.sub(r"//[^\n]*", "", txt)
+    return txt
+
+
+def _resolver_ifdef(txt):
+    """
+    Mini-preprocessador: resolve `define/`undef/`ifdef/`ifndef/`elsif/`else/
+    `endif e DESCARTA os ramos inativos. Assim a analise nao conta codigo morto
+    (ex: no CORDIC, portas em `ifdef ITERATE/VALID_FLAG e a tabela DEGREE_8_8).
+    Nao expande macros — so decide quais linhas ficam.
+    """
+    defs = set()
+    stack = []   # cada frame: {"active", "parent", "taken"}
+    ativo = lambda: stack[-1]["active"] if stack else True
+    out = []
+    for linha in txt.splitlines():
+        s = linha.strip()
+        m = re.match(r"`(ifdef|ifndef)\s+(\w+)", s)
+        if m:
+            parent = ativo()
+            cond = (m.group(2) in defs) if m.group(1) == "ifdef" else (m.group(2) not in defs)
+            stack.append({"active": parent and cond, "parent": parent, "taken": parent and cond})
+            continue
+        m = re.match(r"`elsif\s+(\w+)", s)
+        if m and stack:
+            fr = stack[-1]
+            act = fr["parent"] and (not fr["taken"]) and (m.group(1) in defs)
+            fr["active"] = act
+            fr["taken"] = fr["taken"] or act
+            continue
+        if s.startswith("`else") and stack:
+            fr = stack[-1]
+            fr["active"] = fr["parent"] and (not fr["taken"])
+            fr["taken"] = True
+            continue
+        if s.startswith("`endif"):
+            if stack:
+                stack.pop()
+            continue
+        if ativo():
+            md = re.match(r"`define\s+(\w+)", s)
+            if md:
+                defs.add(md.group(1))
+            mu = re.match(r"`undef\s+(\w+)", s)
+            if mu:
+                defs.discard(mu.group(1))
+            out.append(linha)
+    return "\n".join(out)
+
+
+def _texto_ativo(rtl_texto):
+    """Texto pronto para analise: sem comentarios e com ifdefs resolvidos."""
+    return _resolver_ifdef(_sem_comentarios(rtl_texto))
+
+
+def _modulo_topo(t):
+    """
+    Corpo do modulo de topo (o DUT): o modulo que NENHUM outro instancia.
+    Para arquivos com submodulos (ex: CORDIC), evita contar portas dos helpers.
+    """
+    mods = re.findall(r"\bmodule\s+(\w+)", t)
+    if not mods:
+        return t
+    instanciados = {nome for nome in mods
+                    if re.search(rf"\b{re.escape(nome)}\s+\w+\s*\(", t)}
+    candidatos = [m for m in mods if m not in instanciados] or mods
+    nome_topo = candidatos[-1]
+    mm = re.search(rf"\bmodule\s+{re.escape(nome_topo)}\b.*?\bendmodule\b", t, re.S)
+    return mm.group(0) if mm else t
+
+
+def _faixa(valor, faixas):
+    """faixas = lista de (limite_superior, pontuacao); ultima com limite None."""
+    for lim, pts in faixas:
+        if lim is None or valor <= lim:
+            return pts
+    return faixas[-1][1]
+
+
+def p_loc(t):
+    """Linhas de codigo: sem comentarios/ifdef mortos e sem linhas em branco."""
+    n = sum(1 for l in t.splitlines() if l.strip())
+    pts = _faixa(n, [(50, 1), (150, 2), (300, 3), (500, 4), (None, 5)])
+    return pts, n
+
+
+def p_io(t):
+    """Conta PORTAS input/output/inout do modulo de topo (nao bits)."""
+    corpo = _modulo_topo(t)
+    # remove corpos de function/task (tem 'input' de argumento, nao e' porta)
+    corpo = re.sub(r"\bfunction\b.*?\bendfunction\b", " ", corpo, flags=re.S)
+    corpo = re.sub(r"\btask\b.*?\bendtask\b", " ", corpo, flags=re.S)
+    corpo = re.sub(r"\[[^\]]*\]", " ", corpo)               # tira larguras [x:y]
+    corpo = re.sub(r"\b(wire|reg|logic|signed|unsigned)\b", " ", corpo)
+    total = 0
+    for m in re.finditer(
+        r"\b(?:input|output|inout)\b"
+        r"((?:(?!\b(?:input|output|inout)\b)[^;()])*)", corpo):
+        total += len(re.findall(r"[A-Za-z_]\w*", m.group(1)))
+    pts = _faixa(total, [(10, 1), (25, 2), (50, 3), (100, 4), (None, 5)])
+    return pts, total
+
+
+def _nomes_parametros(t):
+    """Todos os nomes declarados em parameter/localparam (varios por linha)."""
+    nomes = set()
+    for stmt in re.finditer(r"\b(?:parameter|localparam)\b([^;]*)", t):
+        for nm in re.finditer(r"\b([A-Za-z_]\w*)\s*=", stmt.group(1)):
+            nomes.add(nm.group(1))
+    return nomes
+
+
+def p_fsm(t):
+    """
+    Numero de estados da FSM. Detecta um registrador de estado (var com <= em
+    bloco de clock, usada em case(var) ou comparada com constantes) e conta as
+    constantes de estado (parameter/localparam ou macros `define).
+    Para estados em `define percorridos por aritmetica (ex: state<=state+1),
+    conta TODOS os `define que compartilham o prefixo comum dos referenciados.
+    Sem FSM detectavel -> 0.
+    """
+    regs = set(re.findall(r"(\w+)\s*<=", t))
+    estado = None
+    for m in re.finditer(r"\bcase[xz]?\s*\(\s*(\w+)\s*\)", t):
+        if m.group(1) in regs:
+            estado = m.group(1)
+            break
+    if not estado:
+        for v in regs:
+            if re.search(rf"\b{re.escape(v)}\s*(==|>|<|>=)\s*`?[A-Za-z_]", t):
+                estado = v
+                break
+    if not estado:
+        return 0, 0
+
+    params = _nomes_parametros(t)
+    defines = set(re.findall(r"`define\s+([A-Za-z_]\w*)", t))
+    simbolos = params | defines
+
+    # rotulos de case (inicio de linha "NOME:") que sao estados declarados
+    labels = set()
+    for lab in re.finditer(r"(?:^|\n)\s*`?([A-Za-z_]\w*)\s*:", t):
+        nome = lab.group(1)
+        if nome != "default" and nome in simbolos:
+            labels.add(nome)
+
+    if labels:
+        n = len(labels)
+    else:
+        # FSM por if (sem case): constantes comparadas/atribuidas ao estado
+        refs = set()
+        for m in re.finditer(
+                rf"{re.escape(estado)}\s*(?:<=|==|>|<|>=)\s*(`?[A-Za-z_]\w*)", t):
+            refs.add(m.group(1).lstrip("`"))
+        ref_defs = {r for r in refs if r in defines}
+        ref_params = {r for r in refs if r in params}
+        estados = set(ref_params)
+        if ref_defs:
+            pref = os.path.commonprefix(list(ref_defs))
+            if len(pref) >= 2 and "_" in pref:
+                estados |= {d for d in defines if d.startswith(pref)}
+            else:
+                estados |= ref_defs
+        n = len(estados)
+
+    pts = _faixa(n, [(1, 0), (4, 1), (10, 2), (20, 3), (50, 4), (None, 5)])
+    return pts, n
+
+
+def p_log(t):
+    """
+    Natureza da logica (acumulativo, teto 5):
+      +1 aritmetica (+,-,* na logica)
+      +2 serial/shift register (registrador que recebe versao concatenada de si)
+      +2 pipeline (generate-for: replicacao estrutural de estagios)
+    Retorna (pontuacao, lista_de_flags).
+    """
+    flags = []
+    pts = 0
+
+    # aritmetica: so dentro da logica (always/assign)
+    regioes = regioes_de_logica(t)
+    dentro = lambda i: any(a <= i < b for a, b in regioes)
+    arit = False
+    for pat in [r"(?<![<>=!+])\+(?![+:])", r"(?<![<>=!-])-(?![>:-])",
+                r"(?<![(*])\*(?![*)])"]:
+        for m in re.finditer(pat, t):
+            if dentro(m.start()):
+                arit = True
+                break
+        if arit:
+            break
+    if arit:
+        pts += 1
+        flags.append("aritmética")
+
+    # serial: LHS recebe concatenacao que contem o proprio LHS -> shift register
+    if re.search(r"(\w+)\s*(?:<=|=)\s*\{[^;{}]*\b\1\s*\[", t):
+        pts += 2
+        flags.append("serial/shift")
+
+    # pipeline: generate ... for (replicacao estrutural de estagios)
+    if re.search(r"\bgenerate\b", t) and re.search(r"\bfor\b", t):
+        pts += 2
+        flags.append("pipeline")
+
+    return min(pts, 5), flags
+
+
+def calcular_icv(rtl_texto):
+    """Monta o ICV do DUT e a classificacao final."""
+    t = _texto_ativo(rtl_texto)
+    ploc, loc_n = p_loc(t)
+    pfsm, fsm_n = p_fsm(t)
+    pio, io_n = p_io(t)
+    plog, log_flags = p_log(t)
+
+    icv = ploc * 0.30 + pfsm * 0.30 + pio * 0.20 + plog * 0.20
+    icv = round(icv, 2)
+    if icv <= 1.2:
+        classe = "Fácil"
+    elif icv <= 2.2:
+        classe = "Média"
+    elif icv <= 3.5:
+        classe = "Alta"
+    else:
+        classe = "Muito Alta"
+
+    return {
+        "icv": icv,
+        "classificacao": classe,
+        "componentes": {
+            "P_LOC": {"pts": ploc, "peso": 0.30, "detalhe": f"{loc_n} linhas de código"},
+            "P_FSM": {"pts": pfsm, "peso": 0.30, "detalhe": f"{fsm_n} estado(s)"},
+            "P_IO":  {"pts": pio,  "peso": 0.20, "detalhe": f"{io_n} portas"},
+            "P_LOG": {"pts": plog, "peso": 0.20,
+                      "detalhe": ", ".join(log_flags) if log_flags else "combinacional básica"},
+        },
+    }
+
+
+# --------------------------------------------------------------------------
 # Rotas
 # --------------------------------------------------------------------------
 
@@ -543,6 +796,9 @@ def avaliar():
         tb_path.write_text(tb_txt)
 
         resultado = compilar_e_cobrir(rtl_path, tb_path, work)
+
+        # ICV: analise SO do texto do DUT — independe de compilar/executar.
+        resultado["icv"] = calcular_icv(rtl_txt)
 
         # Mutacao exige testbench passando no RTL original: se ja falha nele,
         # todo mutante "morre" de graca e o score vira 100% enganoso.

@@ -415,6 +415,49 @@
     color: var(--ink-dim);
     line-height: 2.2;
   }
+
+  /* ---- painel ICV (complexidade do modulo) ---- */
+  .icv-section { margin-top: 32px; display: none; }
+  .icv-section.show { display: block; }
+  .icv-head {
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-dim); margin-bottom: 14px;
+  }
+  .icv-wrap {
+    display: grid; grid-template-columns: 210px 1fr; gap: 14px;
+    align-items: stretch;
+  }
+  @media (max-width: 760px) { .icv-wrap { grid-template-columns: 1fr; } }
+  .icv-score {
+    background: var(--panel); border: 1px solid var(--edge);
+    border-radius: 6px; padding: 18px;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; gap: 10px; text-align: center;
+  }
+  .icv-score .num { font-size: 42px; font-weight: 600; letter-spacing: -0.02em; }
+  .icv-score .classe {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 600; padding: 4px 12px; border-radius: 999px;
+  }
+  .icv-score .formula { font-size: 10px; color: var(--ink-dim); line-height: 1.5; }
+  .classe.facil { color: var(--bg); background: var(--live); }
+  .classe.media { color: var(--bg); background: var(--trace); }
+  .classe.alta  { color: var(--bg); background: #ff9d4d; }
+  .classe.muito { color: var(--bg); background: var(--dead); }
+  .icv-comps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .icv-comps { grid-template-columns: repeat(2, 1fr); } }
+  .icv-comp {
+    background: var(--panel); border: 1px solid var(--edge);
+    border-radius: 6px; padding: 14px;
+  }
+  .icv-comp .k {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .icv-comp .p { font-size: 22px; font-weight: 600; margin: 6px 0 3px; }
+  .icv-comp .p small { font-size: 12px; color: var(--ink-dim); font-weight: 400; }
+  .icv-comp .d { font-size: 11px; color: var(--ink); line-height: 1.5; }
+  .icv-comp .w { font-size: 10px; color: var(--trace-dim); margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -475,6 +518,19 @@
       <div class="label">Cobertura</div>
       <div class="value" id="cov-val">—</div>
       <div class="unit" id="cov-unit"></div>
+    </div>
+  </div>
+
+  <!-- ICV: complexidade combinada do modulo (DUT), so do texto do RTL -->
+  <div class="icv-section" id="icv-section">
+    <div class="icv-head">Complexidade do módulo — ICV</div>
+    <div class="icv-wrap">
+      <div class="icv-score">
+        <div class="num" id="icv-num">—</div>
+        <div class="classe" id="icv-classe">—</div>
+        <div class="formula">ICV = P_LOC·0,30 + P_FSM·0,30 + P_IO·0,20 + P_LOG·0,20</div>
+      </div>
+      <div class="icv-comps" id="icv-comps"></div>
     </div>
   </div>
 
@@ -540,6 +596,7 @@ async function avaliar() {
   btn.disabled = true;
   status.textContent = "Compilando e executando…";
   $("results").classList.remove("show");
+  $("icv-section").classList.remove("show");
   $("mut-section").classList.remove("show");
   $("log-section").classList.remove("show");
 
@@ -575,6 +632,9 @@ function render(d) {
   flags.appendChild(flag("compilou", d.compilou));
   flags.appendChild(flag("executou", d.executou));
   flags.appendChild(flag("passou", d.passou));
+
+  // ICV (complexidade do modulo)
+  renderICV(d.icv);
 
   // cobertura
   if (d.cobertura) {
@@ -701,6 +761,30 @@ function covCard(nome, v) {
   card.appendChild(value);
   card.appendChild(unit);
   return card;
+}
+
+function renderICV(icv) {
+  if (!icv) { $("icv-section").classList.remove("show"); return; }
+  $("icv-num").textContent = icv.icv.toFixed(2).replace(".", ",");
+  const cl = $("icv-classe");
+  cl.textContent = icv.classificacao;
+  const mapa = { "Fácil": "facil", "Média": "media", "Alta": "alta", "Muito Alta": "muito" };
+  cl.className = "classe " + (mapa[icv.classificacao] || "media");
+
+  const comps = $("icv-comps");
+  comps.innerHTML = "";
+  ["P_LOC", "P_FSM", "P_IO", "P_LOG"].forEach((k) => {
+    const c = icv.componentes[k];
+    const div = document.createElement("div");
+    div.className = "icv-comp";
+    div.innerHTML =
+      `<div class="k">${k}</div>` +
+      `<div class="p">${c.pts}<small>/5</small></div>` +
+      `<div class="d">${esc(c.detalhe)}</div>` +
+      `<div class="w">peso ${String(c.peso).replace(".", ",")}</div>`;
+    comps.appendChild(div);
+  });
+  $("icv-section").classList.add("show");
 }
 
 function esc(s) {
