@@ -513,10 +513,12 @@ def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
 # --------------------------------------------------------------------------
 # Indice de Complexidade Combinada para Verificacao (ICV)
 #
-# Metrica SO do DUT (texto do modulo RTL). Combina 4 pontuacoes:
-#   ICV = P_LOC*0.30 + P_FSM*0.30 + P_IO*0.20 + P_LOG*0.20
+# Metrica SO do DUT (texto do modulo RTL). Combina 4 pontuacoes de 0 a 3:
+#   ICV = P_LOC*0.30 + P_FSM*0.30 + P_IO*0.20 + P_LOG*0.20   (ICV vai de 0 a 3)
 # Cada componente e' extraido por heuristica de texto (sem parser Verilog),
 # entao P_FSM e P_LOG sao aproximados — a tela mostra os brutos para auditoria.
+# Escala 0-3 (e nao 0-5) porque a classe de modulos do estudo nunca chega perto
+# do topo: as faixas altas de cada componente (modulos gigantes) foram fundidas.
 # --------------------------------------------------------------------------
 
 def _sem_comentarios(txt):
@@ -604,7 +606,7 @@ def _faixa(valor, faixas):
 def p_loc(t):
     """Linhas de codigo: sem comentarios/ifdef mortos e sem linhas em branco."""
     n = sum(1 for l in t.splitlines() if l.strip())
-    pts = _faixa(n, [(50, 1), (150, 2), (300, 3), (500, 4), (None, 5)])
+    pts = _faixa(n, [(50, 1), (150, 2), (None, 3)])
     return pts, n
 
 
@@ -621,7 +623,7 @@ def p_io(t):
         r"\b(?:input|output|inout)\b"
         r"((?:(?!\b(?:input|output|inout)\b)[^;()])*)", corpo):
         total += len(re.findall(r"[A-Za-z_]\w*", m.group(1)))
-    pts = _faixa(total, [(10, 1), (25, 2), (50, 3), (100, 4), (None, 5)])
+    pts = _faixa(total, [(10, 1), (25, 2), (None, 3)])
     return pts, total
 
 
@@ -687,13 +689,13 @@ def p_fsm(t):
                 estados |= ref_defs
         n = len(estados)
 
-    pts = _faixa(n, [(1, 0), (4, 1), (10, 2), (20, 3), (50, 4), (None, 5)])
+    pts = _faixa(n, [(1, 0), (4, 1), (10, 2), (None, 3)])
     return pts, n
 
 
 def p_log(t):
     """
-    Natureza da logica (acumulativo, teto 5):
+    Natureza da logica (acumulativo, teto 3):
       +1 aritmetica (+,-,* na logica)
       +2 serial/shift register (registrador que recebe versao concatenada de si)
       +2 pipeline (generate-for: replicacao estrutural de estagios)
@@ -728,7 +730,7 @@ def p_log(t):
         pts += 2
         flags.append("pipeline")
 
-    return min(pts, 5), flags
+    return min(pts, 3), flags
 
 
 def calcular_icv(rtl_texto):
@@ -741,11 +743,14 @@ def calcular_icv(rtl_texto):
 
     icv = ploc * 0.30 + pfsm * 0.30 + pio * 0.20 + plog * 0.20
     icv = round(icv, 2)
+    # Faixas calibradas para a classe de modulos do estudo (HDLBits / cores
+    # abertos pequenos), cujo ICV vai na pratica de ~0,5 a ~2,5. A escala
+    # absoluta original (ate 5) deixava Alta/Muito Alta vazias.
     if icv <= 1.2:
         classe = "Fácil"
-    elif icv <= 2.2:
+    elif icv <= 1.7:
         classe = "Média"
-    elif icv <= 3.5:
+    elif icv <= 2.3:
         classe = "Alta"
     else:
         classe = "Muito Alta"
