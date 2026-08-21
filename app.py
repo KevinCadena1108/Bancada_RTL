@@ -606,7 +606,7 @@ def _faixa(valor, faixas):
 def p_loc(t):
     """Linhas de codigo: sem comentarios/ifdef mortos e sem linhas em branco."""
     n = sum(1 for l in t.splitlines() if l.strip())
-    pts = _faixa(n, [(50, 1), (150, 2), (None, 3)])
+    pts = _faixa(n, [(30, 1), (100, 2), (None, 3)])
     return pts, n
 
 
@@ -623,7 +623,7 @@ def p_io(t):
         r"\b(?:input|output|inout)\b"
         r"((?:(?!\b(?:input|output|inout)\b)[^;()])*)", corpo):
         total += len(re.findall(r"[A-Za-z_]\w*", m.group(1)))
-    pts = _faixa(total, [(10, 1), (25, 2), (None, 3)])
+    pts = _faixa(total, [(4, 1), (10, 2), (None, 3)])
     return pts, total
 
 
@@ -689,7 +689,7 @@ def p_fsm(t):
                 estados |= ref_defs
         n = len(estados)
 
-    pts = _faixa(n, [(1, 0), (4, 1), (10, 2), (None, 3)])
+    pts = _faixa(n, [(1, 0), (4, 1), (9, 2), (None, 3)])
     return pts, n
 
 
@@ -748,7 +748,7 @@ def calcular_icv(rtl_texto):
     # absoluta original (ate 5) deixava Alta/Muito Alta vazias.
     if icv <= 1.2:
         classe = "Fácil"
-    elif icv <= 1.7:
+    elif icv <= 1.9:
         classe = "Média"
     elif icv <= 2.3:
         classe = "Alta"
