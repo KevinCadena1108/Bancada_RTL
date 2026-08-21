@@ -636,6 +636,57 @@ def _nomes_parametros(t):
     return nomes
 
 
+# Literal Verilog inteiro: 3, 2'd3, 4'h8, 3'b010, 8'hFF...
+_LIT = r"(?:\d+)?'[sS]?[bodhBODH][0-9a-fA-F_]+|\d+"
+
+
+def _valor_literal(s):
+    """Valor inteiro de um literal Verilog; None se nao der para converter."""
+    s = s.strip().replace("_", "")
+    m = re.fullmatch(r"(?:\d+)?'[sS]?([bodhBODH])([0-9a-fA-F]+)", s)
+    if m:
+        base = {"b": 2, "o": 8, "d": 10, "h": 16}[m.group(1).lower()]
+        try:
+            return int(m.group(2), base)
+        except ValueError:
+            return None
+    if re.fullmatch(r"\d+", s):
+        return int(s)
+    return None
+
+
+def _e_estado_numerico(v, t):
+    """
+    Heuristica anti-contador: o sinal e' DECODIFICADO em assigns
+    (assign saida = v == NUM) com >=2 valores distintos. Isso caracteriza
+    uma FSM de estados numericos e nao um simples contador.
+    """
+    dec = set()
+    for m in re.finditer(rf"\bassign\b[^;]*?\b{re.escape(v)}\s*==\s*({_LIT})", t):
+        val = _valor_literal(m.group(1))
+        if val is not None:
+            dec.add(val)
+    return len(dec) >= 2
+
+
+def _estados_numericos(estado, t):
+    """Valores numericos distintos atribuidos/comparados ao estado."""
+    vals = set()
+    for m in re.finditer(rf"\b{re.escape(estado)}\s*(?:<=|==|!=|<|>|>=)\s*({_LIT})", t):
+        val = _valor_literal(m.group(1))
+        if val is not None:
+            vals.add(val)
+    # rotulos numericos de um case(estado)
+    mc = re.search(rf"\bcase[xz]?\s*\(\s*{re.escape(estado)}\s*\)(.*?)\bendcase\b",
+                   t, re.S)
+    if mc:
+        for lab in re.finditer(rf"(?:^|\n)\s*({_LIT})\s*:", mc.group(1)):
+            val = _valor_literal(lab.group(1))
+            if val is not None:
+                vals.add(val)
+    return vals
+
+
 def p_fsm(t):
     """
     Numero de estados da FSM. Detecta um registrador de estado (var com <= em
@@ -643,7 +694,8 @@ def p_fsm(t):
     constantes de estado (parameter/localparam ou macros `define).
     Para estados em `define percorridos por aritmetica (ex: state<=state+1),
     conta TODOS os `define que compartilham o prefixo comum dos referenciados.
-    Sem FSM detectavel -> 0.
+    Tambem reconhece FSMs com estados NUMERICOS (state==2, state<=3), contando
+    os literais distintos. Sem FSM detectavel -> 0.
     """
     regs = set(re.findall(r"(\w+)\s*<=", t))
     estado = None
@@ -651,9 +703,14 @@ def p_fsm(t):
         if m.group(1) in regs:
             estado = m.group(1)
             break
-    if not estado:
+    if not estado:                       # FSM por if com estados nomeados
         for v in regs:
             if re.search(rf"\b{re.escape(v)}\s*(==|>|<|>=)\s*`?[A-Za-z_]", t):
+                estado = v
+                break
+    if not estado:                       # FSM com estados numericos (state==2..)
+        for v in regs:
+            if _e_estado_numerico(v, t):
                 estado = v
                 break
     if not estado:
@@ -688,6 +745,8 @@ def p_fsm(t):
             else:
                 estados |= ref_defs
         n = len(estados)
+        if n == 0:                       # sem estados nomeados -> tenta numericos
+            n = len(_estados_numericos(estado, t))
 
     pts = _faixa(n, [(1, 0), (4, 1), (9, 2), (None, 3)])
     return pts, n
