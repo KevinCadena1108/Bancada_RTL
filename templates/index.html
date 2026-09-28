@@ -238,6 +238,34 @@
   }
   .status-line.err { color: var(--dead); }
 
+  /* ---- metadados da avaliacao (modulo / estrategia) p/ historico + planilha ---- */
+  .meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .meta label {
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .meta input, .meta select {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 5px;
+    padding: 9px 10px;
+  }
+  .meta input { width: 180px; }
+  .meta input::placeholder { color: var(--ink-dim); }
+  .meta select { cursor: pointer; }
+  .meta option { background: var(--panel); color: var(--ink); }
+
   /* ---- resultados ---- */
   .results {
     margin-top: 32px;
@@ -483,6 +511,21 @@
         <textarea id="rtl" spellcheck="false"></textarea>
       </div>
 
+      <div class="meta">
+        <label for="modulo">Módulo</label>
+        <input id="modulo" type="text" placeholder="ex: fancytimer" spellcheck="false" />
+        <label for="estrategia">Estratégia</label>
+        <select id="estrategia">
+          <option value="">(estratégia)</option>
+          <option value="Zero-shot">Zero-shot</option>
+          <option value="Few-shot">Few-shot</option>
+          <option value="Especialista Zero-shot">Especialista Zero-shot</option>
+          <option value="Especialista Few-shot">Especialista Few-shot</option>
+          <option value="Planing Zero-shot">Planing Zero-shot</option>
+          <option value="Planing Few-shot">Planing Few-shot</option>
+        </select>
+      </div>
+
       <div class="actions">
         <button class="run" id="btn">Avaliar</button>
         <span class="status-line" id="status">Aguardando módulo e testbench</span>
@@ -582,6 +625,8 @@ $("btn").addEventListener("click", avaliar);
 async function avaliar() {
   const rtl = $("rtl").value;
   const tb  = $("tb").value;
+  const modulo = $("modulo").value.trim();
+  const estrategia = $("estrategia").value;
 
   const btn = $("btn");
   const status = $("status");
@@ -605,7 +650,7 @@ async function avaliar() {
     const r = await fetch("/avaliar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rtl, tb })
+      body: JSON.stringify({ rtl, tb, modulo, estrategia })
     });
     const data = await r.json();
 

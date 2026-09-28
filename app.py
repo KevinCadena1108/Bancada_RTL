@@ -205,8 +205,10 @@ def compilar_e_cobrir(rtl_path, tb_path, work):
 
 def ler_cobertura(covfile, rtl_path):
     """
-    Roda verilator_coverage e extrai pontos cobertos / total.
-    Le direto o coverage.dat como fonte da verdade (o binario e' texto).
+    Extrai pontos cobertos / total lendo direto o coverage.dat como fonte
+    da verdade (o formato e' texto; nao chama verilator_coverage). Coberto =
+    contagem >= 1; conta so pontos do dut.v, separando por tipo (v_line /
+    v_toggle / v_branch).
     """
     if not covfile.exists():
         return None
