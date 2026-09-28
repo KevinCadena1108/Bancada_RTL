@@ -16,11 +16,13 @@ Todo o conhecimento acumulado esta aqui:
 """
 
 import csv
+import json
 import os
 import re
 import shutil
 import subprocess
 import tempfile
+import urllib.request
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -49,6 +51,26 @@ MAX_TENTATIVAS = 16
 # Historico de avaliacoes (uma linha por rodada), para as tabelas
 # comparativas do experimento. Exportado em /historico.csv.
 HISTORICO = BASE / "historico.csv"
+
+# Opcional: URL de um webhook (Google Apps Script) para o qual cada avaliacao
+# e' enviada, alimentando uma planilha automaticamente. Definido via variavel
+# de ambiente GSHEET_WEBHOOK; se vazio, nada e' enviado.
+GSHEET_WEBHOOK = os.environ.get("GSHEET_WEBHOOK", "").strip()
+
+
+def enviar_para_sheets(linha):
+    """POST da linha (dict) para o webhook da planilha. Nunca levanta erro."""
+    if not GSHEET_WEBHOOK:
+        return
+    try:
+        req = urllib.request.Request(
+            GSHEET_WEBHOOK,
+            data=json.dumps(linha).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        urllib.request.urlopen(req, timeout=10).read()
+    except Exception:
+        pass  # planilha e' um extra: falha nela nunca derruba a avaliacao
 
 
 def registrar_historico(modulo, estrategia, resultado):
@@ -87,6 +109,14 @@ def registrar_historico(modulo, estrategia, resultado):
             if novo:
                 w.writeheader()
             w.writerow(linha)
+        # Envia para a planilha (com ICV/classe extra). enviar_para_sheets
+        # engole seus proprios erros, entao nao derruba a avaliacao.
+        icv = resultado.get("icv") or {}
+        enviar_para_sheets({
+            **linha,
+            "icv": icv.get("icv", ""),
+            "classe": icv.get("classificacao", ""),
+        })
     except OSError:
         pass
 
