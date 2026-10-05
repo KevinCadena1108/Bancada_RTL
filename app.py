@@ -38,8 +38,19 @@ HARNESS = BASE / "sim" / "main.cpp"
 # Nome que o modulo do testbench DEVE ter. O harness faz #include "Vtb.h".
 TB_TOP = "tb"
 
-# Timeout por invocacao do Verilator/simulacao (segundos).
-TIMEOUT = 60
+# Timeout da COMPILACAO (segundos). Alto o bastante para o compile de modulos
+# grandes (ex: AES) nao ser morto no meio.
+TIMEOUT = 240
+
+# Timeout da EXECUCAO da simulacao (segundos). Curto: um TB correto roda em ms;
+# um mutante que trava (ex: clock gerado que nunca alterna, deixando o TB preso
+# em @(negedge ...)) deve morrer rapido, sem segurar a requisicao pelo TIMEOUT
+# de compilacao. Trava => morto por timeout => conta como mutante detectado.
+SIM_TIMEOUT = 30
+
+# Nivel de paralelismo do Verilator (verilacao + build C++). Modulos grandes
+# compilam MUITO mais rapido usando varios nucleos; e' o gargalo da bancada.
+BUILD_JOBS = "8"
 
 # Quantos mutantes validos (que compilam) avaliar por rodada.
 MAX_MUTANTES = 4
@@ -164,6 +175,7 @@ def compilar_e_cobrir(rtl_path, tb_path, work):
         [
             "verilator", "--cc", "--exe", "--build",
             "--timing", "--coverage",
+            "-j", BUILD_JOBS,   # verilacao + build C++ em paralelo
             # -Wno-fatal: warnings (LATCH, CASEINCOMPLETE...) nao bloqueiam
             "-Wno-fatal",
             "-Wno-DECLFILENAME", "-Wno-WIDTH", "-Wno-UNOPTFLAT",
@@ -184,7 +196,7 @@ def compilar_e_cobrir(rtl_path, tb_path, work):
     # --- simular ---
     covfile = Path(work) / "coverage.dat"
     sim_bin = mdir / "sim"
-    rc, out, err = run([str(sim_bin), str(covfile)], cwd=work)
+    rc, out, err = run([str(sim_bin), str(covfile)], cwd=work, timeout=SIM_TIMEOUT)
 
     executou = rc != 127 and "timeout" not in err
     # exit 0 = testbench passou; != 0 (ex: $fatal) = alguma checagem falhou
@@ -503,6 +515,7 @@ def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
         rc, out, err = run(
             [
                 "verilator", "--binary", "--timing", "-Wno-fatal",
+                "-j", BUILD_JOBS,   # compile de mutante em paralelo
                 "-Wno-DECLFILENAME", "-Wno-WIDTH", "-Wno-UNOPTFLAT",
                 "--Mdir", str(mdir), "--top-module", TB_TOP, "-o", "mut",
                 str(mut_file), str(tb_path),
@@ -514,7 +527,7 @@ def testar_mutacao(rtl_texto, tb_path, work, max_mutantes=MAX_MUTANTES):
             shutil.rmtree(mdir, ignore_errors=True)
             continue
 
-        rc, out, err = run([str(mdir / "mut")], cwd=work)
+        rc, out, err = run([str(mdir / "mut")], cwd=work, timeout=SIM_TIMEOUT)
         status = "morto" if rc != 0 else "sobreviveu"
         if rc != 0:
             mortos += 1
@@ -930,4 +943,4 @@ def historico():
 
 if __name__ == "__main__":
     # host 0.0.0.0 para funcionar tambem via WSL
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)
