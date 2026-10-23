@@ -45,9 +45,13 @@ O núcleo carrega as correções descobertas na prática:
 
 - **build em `/tmp`** via `--Mdir` (o make do Verilator não aceita caminho com
   espaço)
-- **harness C++** (`sim/main.cpp`) para gravar a cobertura — o `--binary` sozinho
-  não grava
-- **`--annotate-min 1`** na leitura de cobertura (o default 10 daria 0%)
+- **harness C++** (`sim/main.cpp`) grava a cobertura via *flush callback* — assim o
+  que foi exercitado é salvo **mesmo quando o testbench aborta com `$fatal`**
+- **cobertura lida direto do `coverage.dat`** (formato texto): a bancada **não**
+  chama `verilator_coverage`; conta os pontos do `dut.v` por tipo (coberto = contador ≥ 1)
+- **compilação em paralelo** (`-j`) e **timeouts separados** — `TIMEOUT` alto para
+  compilar módulos grandes sem ser morto, e `SIM_TIMEOUT` curto para a execução
+  (um mutante que trava a simulação morre rápido)
 - **módulo do testbench = `tb`** para o harness ser genérico
 
 ## O que sai
@@ -101,8 +105,23 @@ abertos pequenos); a extração é por heurística de texto, sem parser.
 
 Cada avaliação é registrada em `historico.csv` (data, módulo, estratégia,
 compilou/executou/passou, cobertura por tipo, FSM, mutantes e mutation score).
-Baixe em `GET /historico.csv`. Os campos `modulo` e `estrategia` vêm do JSON do
-POST — úteis para comparar estratégias de prompt em lote.
+Baixe em `GET /historico.csv`. Os campos `modulo` e `estrategia` vêm dos inputs
+da tela (enviados no JSON do POST) — úteis para comparar estratégias de prompt em lote.
+
+## Envio automático para o Google Sheets (opcional)
+
+Se a variável de ambiente **`GSHEET_WEBHOOK`** estiver definida, cada avaliação
+também é enviada (POST JSON) para esse webhook — um *Google Apps Script* (`doPost`)
+preso à planilha do experimento, que preenche a matriz (bloco por módulo, métricas
+nas linhas, estratégias nas colunas).
+
+- A URL fica em **`webhook.env`** (ao lado do `start.sh`), que **não vai para o git**.
+  Crie com: `export GSHEET_WEBHOOK="https://script.google.com/macros/s/SEU_ID/exec"`.
+  O `start.sh` faz `source webhook.env` se o arquivo existir.
+- **Falha no envio nunca derruba a avaliação** (timeout de 10 s, erros engolidos) —
+  por isso uma linha pode se perder silenciosamente numa falha transitória. Como o
+  `historico.csv` sempre grava tudo, dá para reenviar depois.
+- O Apps Script fica **no Google**, não neste repositório.
 
 ## Limitações honestas
 
@@ -126,8 +145,8 @@ FSM) e medindo a cobertura dos braços desse case.
 **ICV é heurístico.** Sem parser, P_FSM e P_LOG são estimativas de texto — por
 isso a tela mostra os 4 componentes brutos, para auditoria.
 
-**Um módulo por vez.** A página avalia um par RTL+TB. Para rodar os 6–10 módulos
-× 4 estratégias em lote, o mesmo `app.py` pode virar um script de linha de comando
+**Um módulo por vez.** A página avalia um par RTL+TB. Para rodar os 8–10 módulos
+× 6 estratégias (fatorial 2×3) em lote, o mesmo `app.py` pode virar um script de linha de comando
 — as funções `compilar_e_cobrir`, `testar_mutacao` e `calcular_icv` já são
 independentes do Flask.
 
