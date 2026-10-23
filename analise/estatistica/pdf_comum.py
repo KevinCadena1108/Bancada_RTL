@@ -180,6 +180,13 @@ def tabela(cab, linhas, larguras, destacar_ultima=False, primeira_esq=True, cor_
 # Referencias (ABNT)
 # --------------------------------------------------------------------------
 REFS = {
+    "ARCURI": "ARCURI, Andrea; BRIAND, Lionel. A practical guide for using statistical tests to "
+              "assess randomized algorithms in software engineering. In: INTERNATIONAL CONFERENCE "
+              "ON SOFTWARE ENGINEERING, 33., 2011, Honolulu. <b>Proceedings</b> [...]. New York: "
+              "ACM, 2011. p. 1-10. DOI: 10.1145/1985793.1985795.",
+    "WASSERSTEIN": "WASSERSTEIN, Ronald L.; LAZAR, Nicole A. The ASA's statement on p-values: "
+                   "context, process, and purpose. <b>The American Statistician</b>, v. 70, n. 2, "
+                   "p. 129-133, 2016. DOI: 10.1080/00031305.2016.1154108.",
     "DEMSAR": "DEMŠAR, Janez. Statistical comparisons of classifiers over multiple data sets. "
               "<b>Journal of Machine Learning Research</b>, v. 7, p. 1-30, 2006.",
     "FISHER": "FISHER, Ronald A. <b>Statistical methods for research workers</b>. 4. ed. "
