@@ -63,29 +63,85 @@ MAX_TENTATIVAS = 16
 # comparativas do experimento. Exportado em /historico.csv.
 HISTORICO = BASE / "historico.csv"
 
+# Copia de cada avaliacao (RTL, testbench e resultado), uma pasta por envio,
+# para os testbenches gerados nunca se perderem. Ver salvar_avaliacao().
+AVALIACOES = BASE / "avaliacoes"
+
 # Opcional: URL de um webhook (Google Apps Script) para o qual cada avaliacao
 # e' enviada, alimentando uma planilha automaticamente. Definido via variavel
 # de ambiente GSHEET_WEBHOOK; se vazio, nada e' enviado.
 GSHEET_WEBHOOK = os.environ.get("GSHEET_WEBHOOK", "").strip()
 
+# Timeout do envio para a planilha (segundos). O Apps Script pode demorar na
+# primeira chamada e espera ate 30s pelo lock; com timeout curto a bancada
+# acusava falha mesmo quando a planilha gravava.
+SHEETS_TIMEOUT = 30
+
+# Linhas que nao chegaram a planilha (falha de rede/timeout), uma por linha em
+# JSON, para reenviar depois. O historico.csv continua tendo tudo.
+PENDENTES = BASE / "envios_pendentes.jsonl"
+
+
+def guardar_pendente(linha, motivo):
+    """Anexa a linha que nao chegou a planilha em PENDENTES. Nunca levanta erro."""
+    try:
+        with open(PENDENTES, "a", encoding="utf-8") as f:
+            f.write(json.dumps({**linha, "_motivo": motivo}, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+
 
 def enviar_para_sheets(linha):
-    """POST da linha (dict) para o webhook da planilha. Nunca levanta erro."""
+    """
+    POST da linha (dict) para o webhook da planilha. Nunca levanta erro:
+    devolve o que aconteceu, para a tela mostrar. "motivo" e' um de:
+    gravou / recusou (o Apps Script respondeu ok:false) / estranha (resposta
+    que nao e' o JSON do script) / falhou (rede ou timeout) / sem_webhook.
+    """
     if not GSHEET_WEBHOOK:
-        return
+        return {"ok": False, "motivo": "sem_webhook",
+                "msg": "webhook não configurado: suba o servidor com ./start.sh"}
     try:
         req = urllib.request.Request(
             GSHEET_WEBHOOK,
             data=json.dumps(linha).encode("utf-8"),
             headers={"Content-Type": "application/json"},
         )
-        urllib.request.urlopen(req, timeout=10).read()
-    except Exception:
-        pass  # planilha e' um extra: falha nela nunca derruba a avaliacao
+        corpo = urllib.request.urlopen(req, timeout=SHEETS_TIMEOUT).read()
+    except Exception as e:
+        # planilha e' um extra: falha nela nunca derruba a avaliacao, mas a
+        # linha fica guardada para reenviar
+        guardar_pendente(linha, str(e))
+        return {"ok": False, "motivo": "falhou",
+                "msg": f"envio falhou ({e}). Se foi timeout, a planilha pode ter "
+                       f"gravado mesmo assim: confira. A linha ficou em {PENDENTES.name}"}
+    try:
+        resp = json.loads(corpo.decode("utf-8"))
+    except ValueError:
+        resp = None
+    if not isinstance(resp, dict) or "ok" not in resp:
+        trecho = re.sub(r"<[^>]+>", " ", corpo.decode("utf-8", "replace"))
+        return {"ok": False, "motivo": "estranha",
+                "msg": "a planilha respondeu algo inesperado (erro no Apps Script?): "
+                       + " ".join(trecho.split())[:160]}
+    # o script antigo repetia nomes em "escreveu"; mostra cada metrica uma vez
+    feitas = ", ".join(dict.fromkeys(resp.get("escreveu") or [])) or "nada"
+    if resp["ok"]:
+        onde = f" na aba {resp['aba']}" if resp.get("aba") else ""
+        return {"ok": True, "motivo": "gravou", "msg": f"gravado{onde}: {feitas}",
+                "resposta": resp}
+    if resp.get("faltou"):
+        msg = f"gravou só {feitas}; faltou {', '.join(resp['faltou'])}"
+    else:
+        msg = resp.get("erro") or "a planilha recusou sem dizer o motivo"
+    return {"ok": False, "motivo": "recusou", "msg": msg, "resposta": resp}
 
 
 def registrar_historico(modulo, estrategia, resultado):
-    """Anexa a avaliacao ao CSV. Nunca derruba a requisicao se falhar."""
+    """
+    Anexa a avaliacao ao CSV e envia para a planilha. Nunca derruba a
+    requisicao: devolve o status do envio (ver enviar_para_sheets) para a tela.
+    """
     try:
         c = resultado.get("cobertura") or {}
         por_tipo = c.get("por_tipo") or {}
@@ -123,13 +179,41 @@ def registrar_historico(modulo, estrategia, resultado):
         # Envia para a planilha (com ICV/classe extra). enviar_para_sheets
         # engole seus proprios erros, entao nao derruba a avaliacao.
         icv = resultado.get("icv") or {}
-        enviar_para_sheets({
+        return enviar_para_sheets({
             **linha,
             "icv": icv.get("icv", ""),
             "classe": icv.get("classificacao", ""),
         })
+    except OSError as e:
+        return {"ok": False, "motivo": "csv",
+                "msg": f"não gravou o historico.csv ({e}); nada foi enviado à planilha"}
+
+
+def salvar_avaliacao(modulo, estrategia, rtl_txt, tb_txt, resultado):
+    """
+    Guarda RTL, testbench e resultado (com a lista de mutantes) em
+    avaliacoes/<data>_<modulo>_<estrategia>/. Devolve o caminho relativo,
+    para a tela, ou None se nao conseguiu gravar. Nunca levanta erro.
+    """
+    def limpo(s):
+        return re.sub(r"[^A-Za-z0-9_-]+", "_", s).strip("_") or "sem_nome"
+
+    base = AVALIACOES / "{}_{}_{}".format(
+        datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), limpo(modulo), limpo(estrategia))
+    pasta, n = base, 1
+    while pasta.exists():           # duas avaliacoes no mesmo segundo
+        n += 1
+        pasta = base.with_name(f"{base.name}_{n}")
+    try:
+        pasta.mkdir(parents=True)
+        (pasta / "dut.v").write_text(rtl_txt)
+        (pasta / "tb.v").write_text(tb_txt)
+        (pasta / "resultado.json").write_text(json.dumps(
+            {"modulo": modulo, "estrategia": estrategia, **resultado},
+            ensure_ascii=False, indent=2))
     except OSError:
-        pass
+        return None
+    return str(pasta.relative_to(BASE))
 
 
 # --------------------------------------------------------------------------
@@ -923,11 +1007,11 @@ def avaliar():
         else:
             resultado["mutacao"] = testar_mutacao(rtl_txt, tb_path, work)
 
-        registrar_historico(
-            data.get("modulo", "").strip(),
-            data.get("estrategia", "").strip(),
-            resultado,
-        )
+        modulo = data.get("modulo", "").strip()
+        estrategia = data.get("estrategia", "").strip()
+        resultado["planilha"] = registrar_historico(modulo, estrategia, resultado)
+        resultado["salvo_em"] = salvar_avaliacao(modulo, estrategia, rtl_txt, tb_txt,
+                                                 resultado)
         return jsonify(resultado)
     finally:
         shutil.rmtree(work, ignore_errors=True)

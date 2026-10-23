@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 historico.csv
 webhook.env
+avaliacoes/
+envios_pendentes.jsonl

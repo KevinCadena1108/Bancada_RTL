@@ -238,6 +238,27 @@
   }
   .status-line.err { color: var(--dead); }
 
+  /* ---- retorno da planilha (webhook) e onde a avaliacao foi salva ---- */
+  .sheet {
+    display: none;
+    margin-top: 14px;
+    padding: 9px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-left-width: 3px;
+    border-radius: 5px;
+  }
+  .sheet.show { display: block; }
+  .sheet.ok   { border-color: var(--live); }
+  .sheet.warn { border-color: var(--trace); }
+  .sheet.bad  { border-color: var(--dead); }
+  .sheet.ok b   { color: var(--live); }
+  .sheet.warn b { color: var(--trace); }
+  .sheet.bad b  { color: var(--dead); }
+  .sheet .salvo { color: var(--ink-dim); margin-top: 3px; }
+
   /* ---- metadados da avaliacao (modulo / estrategia) p/ historico + planilha ---- */
   .meta {
     display: flex;
@@ -530,6 +551,9 @@
         <button class="run" id="btn">Avaliar</button>
         <span class="status-line" id="status">Aguardando módulo e testbench</span>
       </div>
+
+      <!-- retorno do envio para a planilha + onde o RTL/TB foram salvos -->
+      <div class="sheet" id="sheet"></div>
     </div>
 
     <div class="field">
@@ -645,6 +669,7 @@ async function avaliar() {
   $("cov-section").classList.remove("show");
   $("mut-section").classList.remove("show");
   $("log-section").classList.remove("show");
+  $("sheet").className = "sheet";
 
   try {
     const r = await fetch("/avaliar", {
@@ -662,7 +687,12 @@ async function avaliar() {
     }
 
     render(data);
-    status.textContent = "Avaliação concluída";
+    if (data.planilha && data.planilha.ok) {
+      status.textContent = "Avaliação concluída";
+    } else {
+      status.textContent = "Avaliação concluída, mas a planilha não foi atualizada";
+      status.classList.add("err");
+    }
   } catch (e) {
     status.textContent = "Falha ao conectar com o servidor";
     status.classList.add("err");
@@ -681,6 +711,9 @@ function render(d) {
 
   // ICV (complexidade do modulo)
   renderICV(d.icv);
+
+  // planilha (webhook) e copia salva da avaliacao
+  renderPlanilha(d.planilha, d.salvo_em);
 
   // cobertura
   if (d.cobertura) {
@@ -831,6 +864,20 @@ function renderICV(icv) {
     comps.appendChild(div);
   });
   $("icv-section").classList.add("show");
+}
+
+// Retorno do envio para a planilha (ok / recusou / falhou / sem webhook) e
+// a pasta onde o RTL, o testbench e o resultado foram salvos
+function renderPlanilha(p, salvo) {
+  const tipo = !p ? "warn" : p.ok ? "ok" : (p.motivo === "sem_webhook" ? "warn" : "bad");
+  const titulo = { ok: "✓ Planilha", warn: "⚠ Planilha", bad: "✗ Planilha" }[tipo];
+  const box = $("sheet");
+  box.className = "sheet show " + tipo;
+  box.innerHTML =
+    `<div><b>${titulo}:</b> ${esc(p ? p.msg : "o servidor não informou o envio")}</div>` +
+    `<div class="salvo">${salvo
+      ? "RTL, testbench e resultado salvos em " + esc(salvo)
+      : "não foi possível salvar o RTL e o testbench desta avaliação"}</div>`;
 }
 
 function esc(s) {

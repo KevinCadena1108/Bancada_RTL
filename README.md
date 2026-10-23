@@ -108,6 +108,11 @@ compilou/executou/passou, cobertura por tipo, FSM, mutantes e mutation score).
 Baixe em `GET /historico.csv`. Os campos `modulo` e `estrategia` vêm dos inputs
 da tela (enviados no JSON do POST) — úteis para comparar estratégias de prompt em lote.
 
+Além disso, cada avaliação é **salva inteira** em
+`avaliacoes/<data>_<módulo>_<estratégia>/`: o RTL (`dut.v`), o testbench (`tb.v`) e
+o resultado completo (`resultado.json`, com a lista dos mutantes e o retorno da
+planilha). A tela mostra a pasta. Assim os testbenches gerados não se perdem.
+
 ## Envio automático para o Google Sheets (opcional)
 
 Se a variável de ambiente **`GSHEET_WEBHOOK`** estiver definida, cada avaliação
@@ -118,10 +123,19 @@ nas linhas, estratégias nas colunas).
 - A URL fica em **`webhook.env`** (ao lado do `start.sh`), que **não vai para o git**.
   Crie com: `export GSHEET_WEBHOOK="https://script.google.com/macros/s/SEU_ID/exec"`.
   O `start.sh` faz `source webhook.env` se o arquivo existir.
-- **Falha no envio nunca derruba a avaliação** (timeout de 10 s, erros engolidos) —
-  por isso uma linha pode se perder silenciosamente numa falha transitória. Como o
-  `historico.csv` sempre grava tudo, dá para reenviar depois.
-- O Apps Script fica **no Google**, não neste repositório.
+- **Falha no envio nunca derruba a avaliação, mas aparece na tela.** Abaixo do botão
+  Avaliar, uma caixa mostra o que a planilha respondeu: gravou (verde), recusou com o
+  motivo (vermelho: módulo não encontrado, bloco travado, gravou só parte...), falha de
+  rede/timeout (vermelho) ou servidor sem webhook (amarelo). O timeout é de 30 s.
+- Linhas que não chegaram (falha de rede/timeout) ficam em **`envios_pendentes.jsonl`**,
+  para reenviar. O `historico.csv` sempre grava tudo.
+- O Apps Script roda **no Google**; a versão em uso está copiada em
+  [`planilha/doPost.gs`](planilha/doPost.gs). Ele acha o bloco pelo nome em qualquer
+  coluna (a 2ª rodada fica ao lado da 1ª, com nomes terminados em "2"), trava os blocos
+  da coluna A (1ª rodada) e separa "Não compilou", "Timeout" e "Não passou". Depois de
+  colar uma versão nova no editor do Apps Script, atualize a implantação existente
+  (**Implantar → Gerenciar implantações → editar → Nova versão**), não crie outra: uma
+  implantação nova muda a URL do `webhook.env`.
 
 ## Limitações honestas
 
