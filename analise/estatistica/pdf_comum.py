@@ -1,5 +1,8 @@
 """Partes comuns dos PDFs de estatistica: dados da planilha, calculos basicos, estilos e referencias."""
+import math
+import os
 import re
+import sys
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -9,9 +12,12 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
+from scipy.stats import PermutationMethod, wilcoxon
 
 # --------------------------------------------------------------------------
-# Dados: linha "Mutantes" da planilha, na ordem ZS, FS, EspZS, EspFS, PlnZS, PlnFS
+# Dados: linha "Mutantes" da planilha, na ordem ZS, FS, EspZS, EspFS, PlnZS, PlnFS.
+# Duas rodadas com os mesmos 10 circuitos (mesmo RTL, logo os mesmos 4 mutantes); na 2a os
+# testbenches foram gerados de novo (blocos com o nome terminado em "2" na planilha).
 # --------------------------------------------------------------------------
 ESTR = ["ZS", "FS", "EspZS", "EspFS", "PlnZS", "PlnFS"]
 NOME_ESTR = {
@@ -22,7 +28,7 @@ NOME_ESTR = {
 CIRCUITOS = ["Fsm serialdp", "Exams/2012 q2fsm", "Cout Clock", "Cs450/gshare", "Lemmings1",
              "wbuart32", "Cordic", "Conwaylife", "fancytimer", "I2C Slave"]
 NP = "Não passou"
-PLANILHA = {
+PLANILHA_R1 = {
     "GPT-5.6 Luna": [
         ["4/4", "4/4", NP, "4/4", NP, "4/4"],
         ["3/4", "3/4", "3/4", "3/4", "4/4", "3/4"],
@@ -48,7 +54,42 @@ PLANILHA = {
         ["2/4", "1/4", "1/4", "4/4", NP, NP],
     ],
 }
+PLANILHA_R2 = {
+    "GPT-5.6 Luna": [
+        [NP, NP, "4/4", NP, NP, "4/4"],
+        ["3/4", "4/4", "4/4", NP, "4/4", NP],
+        [NP, "4/4", NP, NP, "4/4", "4/4"],
+        ["3/4", "3/4", NP, "2/4", "3/4", "3/4"],
+        ["4/4", "4/4", "4/4", "4/4", "4/4", "4/4"],
+        ["3/4", NP, NP, "3/4", "4/4", "4/4"],
+        ["2/4", NP, "2/4", "3/4", "3/4", "3/4"],
+        ["4/4", "4/4", "4/4", NP, "4/4", "4/4"],
+        [NP, NP, "4/4", NP, "3/4", "4/4"],
+        [NP, NP, "3/4", "3/4", "2/4", "3/4"],
+    ],
+    "Gemini 3.5 Flash-Lite": [
+        [NP, "4/4", "4/4", "4/4", NP, "4/4"],
+        ["3/4", "3/4", "3/4", "3/4", "3/4", "3/4"],
+        ["2/4", "3/4", NP, "2/4", "2/4", "2/4"],
+        ["0/4", "1/4", NP, NP, NP, NP],
+        ["4/4", "4/4", "4/4", "4/4", "4/4", "4/4"],
+        ["3/4", "3/4", "3/4", "3/4", "3/4", "3/4"],
+        [NP, "1/4", NP, "2/4", NP, "2/4"],
+        ["3/4", "3/4", "3/4", "3/4", "0/4", "4/4"],
+        [NP, "3/4", "3/4", "3/4", "3/4", "3/4"],
+        ["1/4", "1/4", "3/4", "2/4", "1/4", "1/4"],
+    ],
+}
+RODADAS = {1: PLANILHA_R1, 2: PLANILHA_R2}
+MODELOS = list(PLANILHA_R1)
 CURTO = {"GPT-5.6 Luna": "GPT", "Gemini 3.5 Flash-Lite": "Gemini"}
+# Na 2a rodada, 2 celulas foram reavaliadas com um testbench NOVO (os outros reenvios corrigiam um
+# TB colado na estrategia errada) e a planilha ficou com o 2o resultado. Aqui fica o 1o, para a
+# verificacao de robustez: (modelo, circuito, estrategia) -> celula do 1o envio.
+PRIMEIRO_ENVIO_R2 = {
+    ("GPT-5.6 Luna", 1, 4): NP,                 # Exams/2012 q2fsm2, Planning Zero-shot (depois 4/4)
+    ("Gemini 3.5 Flash-Lite", 7, 5): "0/4",     # Conwaylife2_gemini, Planning Few-shot (depois 4/4)
+}
 
 
 def converter(celula):
@@ -57,8 +98,59 @@ def converter(celula):
     return int(m.group(1)) if m else 0
 
 
-def valores(modelo):
-    return [[converter(c) for c in linha] for linha in PLANILHA[modelo]]
+def abrev(celula):
+    """Celula da planilha em forma curta para as tabelas: NP = Não passou, TO = Timeout."""
+    return {NP: "NP", "Timeout": "TO"}.get(celula, celula)
+
+
+def celulas(modelo, rodada, primeiro_envio=False):
+    tab = [list(linha) for linha in RODADAS[rodada][modelo]]
+    if rodada == 2 and primeiro_envio:
+        for (m, i, j), cel in PRIMEIRO_ENVIO_R2.items():
+            if m == modelo:
+                tab[i][j] = cel
+    return tab
+
+
+def valores(modelo, rodada=None, primeiro_envio=False):
+    """Mutantes mortos por circuito × estratégia. Com rodada = 1 ou 2, os inteiros daquela rodada;
+    sem rodada, a média das duas (0; 0,5; ...; 4), que é o valor analisado."""
+    if rodada is not None:
+        return [[converter(c) for c in linha] for linha in celulas(modelo, rodada, primeiro_envio)]
+    r1, r2 = valores(modelo, 1), valores(modelo, 2, primeiro_envio)
+    return [[(a + b) / 2 for a, b in zip(l1, l2)] for l1, l2 in zip(r1, r2)]
+
+
+def wilc(x, y):
+    """Wilcoxon pareado bicaudal exato de y − x (zeros descartados, postos médios).
+    Retorna (ganha, perde, empata, T, p)."""
+    d = [b - a for a, b in zip(x, y)]
+    nz = [i for i, v in enumerate(d) if v != 0]
+    ganha, perde = sum(v > 0 for v in d), sum(v < 0 for v in d)
+    if not nz:
+        return ganha, perde, len(d), 0.0, 1.0
+    r = wilcoxon([y[i] for i in nz], [x[i] for i in nz], zero_method="wilcox",
+                 method=PermutationMethod(n_resamples=max(10 ** 6, 2 ** len(nz))))
+    return ganha, perde, len(d) - len(nz), float(r.statistic), float(r.pvalue)
+
+
+def holm(ps):
+    """p-valores ajustados por Holm (1979): o i-ésimo menor × (m − i + 1), sem deixar cair, até 1."""
+    ordem = sorted(range(len(ps)), key=lambda i: ps[i])
+    adj, acc = [0.0] * len(ps), 0.0
+    for pos, i in enumerate(ordem):
+        acc = max(acc, min(1.0, (len(ps) - pos) * ps[i]))
+        adj[i] = acc
+    return adj
+
+
+Q_NEMENYI_6 = 2.850     # q de Nemenyi para k = 6 e alfa = 0,05 (Demšar 2006, tabela 5a)
+
+
+def nemenyi_cd(k, n):
+    """Diferença crítica de postos médios do pós-teste de Nemenyi (Demšar 2006)."""
+    assert k == 6
+    return Q_NEMENYI_6 * math.sqrt(k * (k + 1) / (6 * n))
 
 
 def postos(vals):
@@ -197,6 +289,8 @@ REFS = {
                 "DOI: 10.1080/01621459.1937.10503522.",
     "HOLLANDER": "HOLLANDER, Myles; WOLFE, Douglas A.; CHICKEN, Eric. <b>Nonparametric "
                  "statistical methods</b>. 3. ed. Hoboken: Wiley, 2014.",
+    "HOLM": "HOLM, Sture. A simple sequentially rejective multiple test procedure. "
+            "<b>Scandinavian Journal of Statistics</b>, v. 6, n. 2, p. 65-70, 1979.",
     "MICROSOFT": "MICROSOFT. <b>Funções estatísticas (referência)</b>. Microsoft Suporte, 2026. "
                  "Disponível em: https://support.microsoft.com/pt-br/Excel/"
                  "statistical-functions-reference. Acesso em: 23 out. 2026.",
@@ -217,6 +311,15 @@ def secao_referencias(story, chaves):
     story.append(P("Referências", "h1"))
     for k in sorted(chaves):
         story.append(P(REFS[k], "ref"))
+
+
+DOC = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                                    "documentacao"))
+
+
+def saida(nome):
+    """Caminho do PDF: o argumento da linha de comando, ou documentacao/<nome> na raiz do repo."""
+    return sys.argv[1] if len(sys.argv) > 1 else os.path.join(DOC, nome)
 
 
 def construir(caminho, story, titulo):
