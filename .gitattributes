@@ -1,0 +1,6 @@
+# Trata binarios como binarios: git NUNCA aplica conversao de fim de linha
+# (core.autocrlf=true poderia corromper esses arquivos no checkout).
+*.pdf  binary
+*.xlsx binary
+*.png  binary
+*.jpg  binary
