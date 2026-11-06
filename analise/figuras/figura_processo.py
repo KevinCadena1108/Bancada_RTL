@@ -106,8 +106,8 @@ faixa(68, 67, "3. Avaliação")
 faixa(143, 24, "4. Análise")
 
 # 1. preparação
-caixa(22, 7, 62, 16, ["Seleção dos circuitos", "10 circuitos RTL em Verilog", "(HDLBits e OpenCores)"])
-caixa(92, 7, 62, 16, ["Definição das estratégias de prompt", "Zero-shot, Few-shot,", "Especialista e Planejamento (ZS e FS)"])
+caixa(22, 7, 62, 16, ["Seleção dos circuitos", "10 circuitos RTL (HDLBits e OpenCores)", "classificados pelo ICV"])
+caixa(92, 7, 62, 16, ["Definição das estratégias de prompt", "Zero-shot, Few-shot,", "Especialista e Planning (ZS e FS)"])
 
 # 2. geração
 caixa(38, 40.5, 100, 15, ["Geração dos testbenches pelos LLMs",
@@ -123,7 +123,7 @@ seta((42, 55.5), (42, 73))
 seta((62, 81), (70, 81))
 losango(91, 104, 40, 18, ["Testbench passou?"])
 seta((91, 89), (91, 95))
-caixa(118, 96.5, 37, 15, ["Teste de mutação", "até 4 mutantes do RTL;", "score = mortos / total"])
+caixa(118, 96.5, 37, 15, ["Teste de mutação", "até 4 mutantes do RTL;", "score = mortos / válidos"])
 caixa(22, 96.5, 40, 15, ["Score de mutação = 0", "não passou ou", "estourou o tempo"], fundo=NEG, borda=NEG_BORDA)
 seta((111, 104), (118, 104), rotulo="Sim", pos_rotulo=(114.5, 102))
 seta((71, 104), (62, 104), rotulo="Não", pos_rotulo=(66.5, 102))
@@ -132,7 +132,7 @@ seta((136.5, 111.5), (136.5, 124.5), (123, 124.5))
 seta((42, 111.5), (42, 124.5), (53, 124.5))
 
 # 4. análise
-caixa(30, 148, 62, 15, ["Análise estatística", "Friedman, Wilcoxon, Holm", "e posto médio"])
+caixa(30, 148, 62, 15, ["Análise dos resultados", "posto médio, score efetivo,", "classes de ICV e cobertura"])
 caixa(102, 148, 52, 15, ["Comparação e conclusões", "estratégias de prompt", "e modelos"], fundo=FIM, borda=FIM_BORDA)
 seta((61, 130), (61, 148))
 seta((92, 155.5), (102, 155.5))
