@@ -4,7 +4,7 @@
 \section{Resultados detalhados}
 \label{ap:resultados}
 
-Este apêndice reúne os dados completos do experimento: o cálculo do ICV de cada módulo (Tabela~\ref{tab:ap_icv}), o resultado do teste de mutação de cada \textit{testbench} (Tabela~\ref{tab:ap_mutacao}) e as coberturas medidas pela Bancada RTL (Tabelas~\ref{tab:ap_cob_gpt} e~\ref{tab:ap_cob_gemini}). Nas tabelas de resultados, cada célula traz os valores das duas rodadas, separados por ponto e vírgula (rodada~1; rodada~2).
+Este apêndice reúne os dados completos do experimento. A Tabela~\ref{tab:ap_icv} mostra o cálculo do ICV de cada módulo, e as Tabelas~\ref{tab:ap_lemmings1} a~\ref{tab:ap_wbuart32} trazem, para cada módulo e cada LLM, as coberturas (\%) e os mutantes mortos de cada estratégia nas duas rodadas. Abreviações: ZS = \textit{Zero-shot}; FS = \textit{Few-shot}; Esp = Especialista; Pln = \textit{Planning}; $k$/4 = mutantes mortos de 4; NP = não passou no circuito original; TO = excedeu o tempo limite. A linha FSM aparece só nos módulos em que a métrica se aplica. As coberturas dos \textit{testbenches} não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é interrompida no primeiro erro.
 
 \begin{table}[htbp]
   \centering
@@ -36,182 +36,280 @@ Este apêndice reúne os dados completos do experimento: o cálculo do ICV de ca
 
 \begin{table}[htbp]
   \centering
-  \caption{Mutantes mortos por módulo, estratégia e modelo (rodada 1; rodada 2)}
-  \label{tab:ap_mutacao}
-  \footnotesize
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}lcccccc@{}}
+  \caption{Resultados do módulo Lemmings1 (HDLBits; ICV 1,0, Fácil)}
+  \label{tab:ap_lemmings1}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
     \toprule
-    Módulo & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
     \midrule
-    \multicolumn{7}{@{}l}{\textit{GPT-5.6 Luna}} \\
-    Lemmings1 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 \\
-    Conwaylife & NP; 4/4 & NP; 4/4 & 4/4; 4/4 & NP; NP & 4/4; 4/4 & 4/4; 4/4 \\
-    Count clock & 4/4; NP & 4/4; 4/4 & NP; NP & 4/4; NP & 4/4; 4/4 & 4/4; 4/4 \\
-    Exams/2012 q2fsm & 3/4; 3/4 & 3/4; 4/4 & 3/4; 4/4 & 3/4; NP & 4/4; 4/4 & 3/4; NP \\
-    Cs450/gshare & NP; 3/4 & 3/4; 3/4 & 3/4; NP & NP; 2/4 & NP; 3/4 & NP; 3/4 \\
-    Fancytimer & NP; NP & NP; NP & NP; 4/4 & 3/4; NP & NP; 3/4 & NP; 4/4 \\
-    CORDIC & NP; 2/4 & 3/4; NP & 3/4; 2/4 & 3/4; 3/4 & NP; 3/4 & 3/4; 3/4 \\
-    Fsm serialdp & 4/4; NP & 4/4; NP & NP; 4/4 & 4/4; NP & NP; NP & 4/4; 4/4 \\
-    SPI Master & TO; NP & 3/4; NP & NP; 3/4 & 4/4; 3/4 & NP; 2/4 & 2/4; 3/4 \\
-    wbuart32 & NP; 3/4 & 2/4; NP & 3/4; NP & 3/4; 3/4 & 3/4; 4/4 & 4/4; 4/4 \\
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad FSM & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Mutantes & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 \\
     \midrule
-    \multicolumn{7}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
-    Lemmings1 & 2/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 \\
-    Conwaylife & 3/4; 3/4 & 3/4; 3/4 & 0/4; 3/4 & 3/4; 3/4 & 0/4; 0/4 & 3/4; 4/4 \\
-    Count clock & NP; 2/4 & 3/4; 3/4 & 3/4; NP & NP; 2/4 & 3/4; 2/4 & 2/4; 2/4 \\
-    Exams/2012 q2fsm & 3/4; 3/4 & 3/4; 3/4 & NP; 3/4 & 4/4; 3/4 & 3/4; 3/4 & 3/4; 3/4 \\
-    Cs450/gshare & NP; 0/4 & NP; 1/4 & 0/4; NP & 0/4; NP & 1/4; NP & NP; NP \\
-    Fancytimer & NP; NP & 4/4; 3/4 & 0/4; 3/4 & 3/4; 3/4 & 1/4; 3/4 & 1/4; 3/4 \\
-    CORDIC & 1/4; NP & NP; 1/4 & 1/4; NP & 1/4; 2/4 & 2/4; NP & 0/4; 2/4 \\
-    Fsm serialdp & NP; NP & 4/4; 4/4 & 4/4; 4/4 & 4/4; 4/4 & NP; NP & 4/4; 4/4 \\
-    SPI Master & 2/4; 1/4 & 1/4; 1/4 & 1/4; 3/4 & 4/4; 2/4 & NP; 1/4 & NP; 1/4 \\
-    wbuart32 & NP; 3/4 & NP; 3/4 & 1/4; 3/4 & 1/4; 3/4 & 3/4; 3/4 & 3/4; 3/4 \\
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 50 & 100 & 100 & 100 & 50 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad FSM & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Mutantes & 2/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 \\
     \bottomrule
   \end{tabular}
-
-  \smallskip
-  {\footnotesize $k$/4 = mutantes mortos de 4; NP = não passou no circuito original; TO = excedeu o tempo limite. ZS = \textit{Zero-shot}; FS = \textit{Few-shot}; Esp = Especialista; Pln = \textit{Planning}.}
 \end{table}
 
 \begin{table}[htbp]
   \centering
-  \caption{Cobertura (\%) dos \textit{testbenches} do GPT-5.6 Luna (rodada 1; rodada 2)}
-  \label{tab:ap_cob_gpt}
-  \scriptsize  % 45 linhas: em tamanho menor a tabela cabe numa página do modelo SBC
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}lcccccc@{}}
+  \caption{Resultados do módulo Conwaylife (HDLBits; ICV 1,0, Fácil)}
+  \label{tab:ap_conwaylife}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
     \toprule
-    Métrica & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
     \midrule
-    \multicolumn{7}{@{}l}{\textit{Lemmings1}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad FSM & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 2,7 & 1,8 & 4 & 3,1 & 5,3 & 5,3 & 75,6 & 68,1 & 77,4 & 76,4 & 100 & 71,2 \\
+    \quad FSM & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Mutantes & NP & NP & 4/4 & NP & 4/4 & 4/4 & 4/4 & 4/4 & 4/4 & NP & 4/4 & 4/4 \\
     \midrule
-    \multicolumn{7}{@{}l}{\textit{Conwaylife}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 2,7; 75,6 & 1,8; 68,1 & 4; 77,4 & 3,1; 76,4 & 5,3; 100 & 5,3; 71,2 \\
-    \quad FSM & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Count clock}} \\
-    \quad Linha & 100; 100 & 75; 100 & 75; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 87,5 & 65,5; 100 & 50; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 67,9; 71,4 & 46,4; 64,3 & 46,4; 82,1 & 82,1; 82,1 & 82,1; 82,1 & 53,6; 82,1 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Exams/2012 q2fsm}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 88,9 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 93,8 \\
-    \quad FSM & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 85,7 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Cs450/gshare}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 33,3; 100 & 66,7; 100 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 75; 100 & 87,5; 100 \\
-    \quad Alternância & 51,5; 54 & 49,1; 49,8 & 52,2; 51,5 & 51,9; 55 & 2,1; 56,4 & 7,9; 53,3 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Fancytimer}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 75; 100 & 100; 100 \\
-    \quad Desvio & 40; 70 & 90; 80 & 30; 80 & 90; 40 & 10; 90 & 80; 90 \\
-    \quad Alternância & 68,6; 68,6 & 80; 77,1 & 51,4; 77,1 & 80; 68,6 & 42,9; 80 & 77,1; 80 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{CORDIC}} \\
-    \quad Linha & 50; 50 & 50; 50 & 50; 50 & 51,4; 50 & 50; 50 & 50; 50 \\
-    \quad Desvio & 98,3; 98,3 & 100; 75 & 100; 98,3 & 100; 100 & 75; 100 & 100; 100 \\
-    \quad Alternância & 48,2; 48,2 & 97,6; 17 & 99,6; 48,2 & 90; 66,6 & 17; 100 & 98,2; 100 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Fsm serialdp}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad FSM & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{SPI Master}} \\
-    \quad Linha & TO; 69,2 & 76,9; 69,2 & 53,8; 92,3 & 92,3; 76,9 & 69,2; 76,9 & 92,3; 69,2 \\
-    \quad Desvio & TO; 90,9 & 100; 81,8 & 36,4; 100 & 100; 100 & 90,9; 100 & 95,5; 90,9 \\
-    \quad Alternância & TO; 63,5 & 84,1; 63,5 & 38,1; 90,5 & 96,8; 82,5 & 69,8; 73 & 96,8; 71,4 \\
-    \quad FSM & TO; 40 & 60; 40 & 20; 100 & 100; 60 & 40; 60 & 100; 40 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{wbuart32}} \\
-    \quad Linha & 84,2; 100 & 94,7; 94,7 & 100; 94,7 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 80; 90 & 90; 90 & 90; 90 & 90; 90 & 90; 90 & 90; 90 \\
-    \quad Alternância & 50; 50 & 83,3; 77,4 & 80,6; 50 & 83,3; 80 & 93,3; 90,3 & 54; 90,3 \\
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 1,8 & 1,8 & 1,9 & 1,8 & 1,9 & 1,8 & 2,1 & 1,8 & 1,8 & 1,8 & 1,9 & 3,6 \\
+    \quad FSM & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Mutantes & 3/4 & 3/4 & 0/4 & 3/4 & 0/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 0/4 & 4/4 \\
     \bottomrule
   \end{tabular}
-
-  \smallskip
-  {\footnotesize TO = excedeu o tempo limite. A linha FSM aparece só nos módulos em que a métrica se aplica. As coberturas dos \textit{testbenches} não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é interrompida no primeiro erro.}
 \end{table}
 
 \begin{table}[htbp]
   \centering
-  \caption{Cobertura (\%) dos \textit{testbenches} do Gemini 3.5 Flash-Lite (rodada 1; rodada 2)}
-  \label{tab:ap_cob_gemini}
-  \scriptsize  % 45 linhas: em tamanho menor a tabela cabe numa página do modelo SBC
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}lcccccc@{}}
+  \caption{Resultados do módulo Count clock (HDLBits; ICV 1,0, Fácil)}
+  \label{tab:ap_countclock}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
     \toprule
-    Métrica & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
     \midrule
-    \multicolumn{7}{@{}l}{\textit{Lemmings1}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 100 & 50; 100 & 100; 100 & 100; 100 & 100; 100 & 50; 100 \\
-    \quad Alternância & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad FSM & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 75 & 75 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 65,5 & 50 & 100 & 100 & 100 & 87,5 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 67,9 & 46,4 & 46,4 & 82,1 & 82,1 & 53,6 & 71,4 & 64,3 & 82,1 & 82,1 & 82,1 & 82,1 \\
+    \quad Mutantes & 4/4 & 4/4 & NP & 4/4 & 4/4 & 4/4 & NP & 4/4 & NP & NP & 4/4 & 4/4 \\
     \midrule
-    \multicolumn{7}{@{}l}{\textit{Conwaylife}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 1,8; 2,1 & 1,8; 1,8 & 1,9; 1,8 & 1,8; 1,8 & 1,9; 1,9 & 1,8; 3,6 \\
-    \quad FSM & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Count clock}} \\
-    \quad Linha & 75; 75 & 75; 75 & 75; 75 & 75; 75 & 75; 75 & 75; 75 \\
-    \quad Desvio & 25; 25 & 37,5; 50 & 62,5; 37,5 & 50; 37,5 & 62,5; 37,5 & 37,5; 37,5 \\
-    \quad Alternância & 28,6; 25 & 28,6; 46,4 & 46,4; 21,4 & 46,4; 25 & 46,4; 25 & 25; 25 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Exams/2012 q2fsm}} \\
-    \quad Linha & 88,9; 100 & 100; 100 & 88,9; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 87,5; 100 & 100; 100 & 87,5; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad FSM & 85,7; 100 & 100; 100 & 85,7; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Cs450/gshare}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 66,7 & 100; 100 & 100; 66,7 & 66,7; 100 \\
-    \quad Desvio & 100; 87,5 & 87,5; 87,5 & 87,5; 87,5 & 87,5; 100 & 100; 87,5 & 87,5; 87,5 \\
-    \quad Alternância & 51,5; 49,1 & 49,1; 51,2 & 48,5; 47,4 & 49,8; 49,8 & 51,5; 48,8 & 48,8; 52,2 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Fancytimer}} \\
-    \quad Linha & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Desvio & 30; 80 & 100; 100 & 40; 100 & 100; 100 & 40; 100 & 40; 100 \\
-    \quad Alternância & 54,3; 65,7 & 80; 80 & 60; 80 & 80; 80 & 62,9; 80 & 60; 80 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{CORDIC}} \\
-    \quad Linha & 50; 50 & 50; 50 & 50; 50 & 50; 50 & 50; 50 & 50; 50 \\
-    \quad Desvio & 98,3; 98,3 & 98,3; 98,3 & 98,3; 25 & 98,3; 98,3 & 98,3; 100 & 98,3; 98,3 \\
-    \quad Alternância & 47; 57,4 & 61,5; 69,9 & 61,5; 2,4 & 59,7; 40,7 & 56,3; 77,4 & 49,1; 49,1 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{Fsm serialdp}} \\
-    \quad Linha & 94,1; 94,1 & 100; 94,1 & 94,1; 100 & 94,1; 94,1 & 94,1; 94,1 & 100; 94,1 \\
-    \quad Desvio & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 & 100; 100 \\
-    \quad Alternância & 94,4; 94,4 & 100; 97,2 & 97,2; 100 & 94,4; 97,2 & 94,4; 94,4 & 100; 97,2 \\
-    \quad FSM & 83,3; 83,3 & 100; 83,3 & 83,3; 100 & 83,3; 83,3 & 83,3; 83,3 & 100; 83,3 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{SPI Master}} \\
-    \quad Linha & 76,9; 76,9 & 69,2; 69,2 & 76,9; 69,2 & 69,2; 69,2 & 69,2; 76,9 & 76,9; 69,2 \\
-    \quad Desvio & 100; 100 & 90,9; 90,9 & 100; 100 & 90,9; 90,9 & 90,9; 100 & 81,8; 90,9 \\
-    \quad Alternância & 88,9; 85,7 & 63,5; 74,6 & 79,4; 66,7 & 61,9; 63,5 & 69,8; 71,4 & 76,2; 71,4 \\
-    \quad FSM & 60; 60 & 40; 40 & 60; 40 & 40; 40 & 40; 60 & 60; 40 \\
-    \midrule
-    \multicolumn{7}{@{}l}{\textit{wbuart32}} \\
-    \quad Linha & 94,7; 100 & 94,7; 94,7 & 100; 100 & 100; 100 & 100; 100 & 94,7; 100 \\
-    \quad Desvio & 90; 90 & 90; 90 & 90; 90 & 90; 90 & 90; 90 & 90; 90 \\
-    \quad Alternância & 80,6; 80 & 48; 48 & 77,4; 48 & 48; 77,4 & 77,4; 80 & 48; 90,3 \\
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 75 & 75 & 75 & 75 & 75 & 75 & 75 & 75 & 75 & 75 & 75 & 75 \\
+    \quad Desvio & 25 & 37,5 & 62,5 & 50 & 62,5 & 37,5 & 25 & 50 & 37,5 & 37,5 & 37,5 & 37,5 \\
+    \quad Alternância & 28,6 & 28,6 & 46,4 & 46,4 & 46,4 & 25 & 25 & 46,4 & 21,4 & 25 & 25 & 25 \\
+    \quad Mutantes & NP & 3/4 & 3/4 & NP & 3/4 & 2/4 & 2/4 & 3/4 & NP & 2/4 & 2/4 & 2/4 \\
     \bottomrule
   \end{tabular}
+\end{table}
 
-  \smallskip
-  {\footnotesize TO = excedeu o tempo limite. A linha FSM aparece só nos módulos em que a métrica se aplica. As coberturas dos \textit{testbenches} não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é interrompida no primeiro erro.}
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo Exams/2012 q2fsm (HDLBits; ICV 1,4, Média)}
+  \label{tab:ap_exams2012q2fsm}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 88,9 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 93,8 \\
+    \quad FSM & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 85,7 \\
+    \quad Mutantes & 3/4 & 3/4 & 3/4 & 3/4 & 4/4 & 3/4 & 3/4 & 4/4 & 4/4 & NP & 4/4 & NP \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 88,9 & 100 & 88,9 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 87,5 & 100 & 87,5 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad FSM & 85,7 & 100 & 85,7 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Mutantes & 3/4 & 3/4 & NP & 4/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo Cs450/gshare (HDLBits; ICV 1,8, Média)}
+  \label{tab:ap_cs450gshare}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 33,3 & 66,7 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 75 & 87,5 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 51,5 & 49,1 & 52,2 & 51,9 & 2,1 & 7,9 & 54 & 49,8 & 51,5 & 55 & 56,4 & 53,3 \\
+    \quad Mutantes & NP & 3/4 & 3/4 & NP & NP & NP & 3/4 & 3/4 & NP & 2/4 & 3/4 & 3/4 \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 66,7 & 100 & 100 & 66,7 & 100 & 66,7 & 100 \\
+    \quad Desvio & 100 & 87,5 & 87,5 & 87,5 & 100 & 87,5 & 87,5 & 87,5 & 87,5 & 100 & 87,5 & 87,5 \\
+    \quad Alternância & 51,5 & 49,1 & 48,5 & 49,8 & 51,5 & 48,8 & 49,1 & 51,2 & 47,4 & 49,8 & 48,8 & 52,2 \\
+    \quad Mutantes & NP & NP & 0/4 & 0/4 & 1/4 & NP & 0/4 & 1/4 & NP & NP & NP & NP \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo Fancytimer (HDLBits; ICV 1,9, Média)}
+  \label{tab:ap_fancytimer}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 75 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 40 & 90 & 30 & 90 & 10 & 80 & 70 & 80 & 80 & 40 & 90 & 90 \\
+    \quad Alternância & 68,6 & 80 & 51,4 & 80 & 42,9 & 77,1 & 68,6 & 77,1 & 77,1 & 68,6 & 80 & 80 \\
+    \quad Mutantes & NP & NP & NP & 3/4 & NP & NP & NP & NP & 4/4 & NP & 3/4 & 4/4 \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 30 & 100 & 40 & 100 & 40 & 40 & 80 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 54,3 & 80 & 60 & 80 & 62,9 & 60 & 65,7 & 80 & 80 & 80 & 80 & 80 \\
+    \quad Mutantes & NP & 4/4 & 0/4 & 3/4 & 1/4 & 1/4 & NP & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo CORDIC (OpenCores; ICV 1,9, Média)}
+  \label{tab:ap_cordic}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 50 & 50 & 50 & 51,4 & 50 & 50 & 50 & 50 & 50 & 50 & 50 & 50 \\
+    \quad Desvio & 98,3 & 100 & 100 & 100 & 75 & 100 & 98,3 & 75 & 98,3 & 100 & 100 & 100 \\
+    \quad Alternância & 48,2 & 97,6 & 99,6 & 90 & 17 & 98,2 & 48,2 & 17 & 48,2 & 66,6 & 100 & 100 \\
+    \quad Mutantes & NP & 3/4 & 3/4 & 3/4 & NP & 3/4 & 2/4 & NP & 2/4 & 3/4 & 3/4 & 3/4 \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 50 & 50 & 50 & 50 & 50 & 50 & 50 & 50 & 50 & 50 & 50 & 50 \\
+    \quad Desvio & 98,3 & 98,3 & 98,3 & 98,3 & 98,3 & 98,3 & 98,3 & 98,3 & 25 & 98,3 & 100 & 98,3 \\
+    \quad Alternância & 47 & 61,5 & 61,5 & 59,7 & 56,3 & 49,1 & 57,4 & 69,9 & 2,4 & 40,7 & 77,4 & 49,1 \\
+    \quad Mutantes & 1/4 & NP & 1/4 & 1/4 & 2/4 & 0/4 & NP & 1/4 & NP & 2/4 & NP & 2/4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo Fsm serialdp (HDLBits; ICV 2,2, Alta)}
+  \label{tab:ap_fsmserialdp}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad FSM & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Mutantes & 4/4 & 4/4 & NP & 4/4 & NP & 4/4 & NP & NP & 4/4 & NP & NP & 4/4 \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 94,1 & 100 & 94,1 & 94,1 & 94,1 & 100 & 94,1 & 94,1 & 100 & 94,1 & 94,1 & 94,1 \\
+    \quad Desvio & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 & 100 \\
+    \quad Alternância & 94,4 & 100 & 97,2 & 94,4 & 94,4 & 100 & 94,4 & 97,2 & 100 & 97,2 & 94,4 & 97,2 \\
+    \quad FSM & 83,3 & 100 & 83,3 & 83,3 & 83,3 & 100 & 83,3 & 83,3 & 100 & 83,3 & 83,3 & 83,3 \\
+    \quad Mutantes & NP & 4/4 & 4/4 & 4/4 & NP & 4/4 & NP & 4/4 & 4/4 & 4/4 & NP & 4/4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo SPI Master (OpenCores; ICV 2,4, Muito Alta)}
+  \label{tab:ap_spimaster}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & TO & 76,9 & 53,8 & 92,3 & 69,2 & 92,3 & 69,2 & 69,2 & 92,3 & 76,9 & 76,9 & 69,2 \\
+    \quad Desvio & TO & 100 & 36,4 & 100 & 90,9 & 95,5 & 90,9 & 81,8 & 100 & 100 & 100 & 90,9 \\
+    \quad Alternância & TO & 84,1 & 38,1 & 96,8 & 69,8 & 96,8 & 63,5 & 63,5 & 90,5 & 82,5 & 73 & 71,4 \\
+    \quad FSM & TO & 60 & 20 & 100 & 40 & 100 & 40 & 40 & 100 & 60 & 60 & 40 \\
+    \quad Mutantes & TO & 3/4 & NP & 4/4 & NP & 2/4 & NP & NP & 3/4 & 3/4 & 2/4 & 3/4 \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 76,9 & 69,2 & 76,9 & 69,2 & 69,2 & 76,9 & 76,9 & 69,2 & 69,2 & 69,2 & 76,9 & 69,2 \\
+    \quad Desvio & 100 & 90,9 & 100 & 90,9 & 90,9 & 81,8 & 100 & 90,9 & 100 & 90,9 & 100 & 90,9 \\
+    \quad Alternância & 88,9 & 63,5 & 79,4 & 61,9 & 69,8 & 76,2 & 85,7 & 74,6 & 66,7 & 63,5 & 71,4 & 71,4 \\
+    \quad FSM & 60 & 40 & 60 & 40 & 40 & 60 & 60 & 40 & 40 & 40 & 60 & 40 \\
+    \quad Mutantes & 2/4 & 1/4 & 1/4 & 4/4 & NP & NP & 1/4 & 1/4 & 3/4 & 2/4 & 1/4 & 1/4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados do módulo wbuart32 (OpenCores; ICV 2,5, Muito Alta)}
+  \label{tab:ap_wbuart32}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}l*{6}{c}@{\hspace{8pt}}*{6}{c}@{}}
+    \toprule
+     & \multicolumn{6}{c}{Rodada 1} & \multicolumn{6}{c}{Rodada 2} \\
+    \cmidrule(r){2-7} \cmidrule(l){8-13}
+     & ZS & FS & EspZS & EspFS & PlnZS & PlnFS & ZS & FS & EspZS & EspFS & PlnZS & PlnFS \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{GPT-5.6 Luna}} \\
+    \quad Linha & 84,2 & 94,7 & 100 & 100 & 100 & 100 & 100 & 94,7 & 94,7 & 100 & 100 & 100 \\
+    \quad Desvio & 80 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 \\
+    \quad Alternância & 50 & 83,3 & 80,6 & 83,3 & 93,3 & 54 & 50 & 77,4 & 50 & 80 & 90,3 & 90,3 \\
+    \quad Mutantes & NP & 2/4 & 3/4 & 3/4 & 3/4 & 4/4 & 3/4 & NP & NP & 3/4 & 4/4 & 4/4 \\
+    \midrule
+    \multicolumn{13}{@{}l}{\textit{Gemini 3.5 Flash-Lite}} \\
+    \quad Linha & 94,7 & 94,7 & 100 & 100 & 100 & 94,7 & 100 & 94,7 & 100 & 100 & 100 & 100 \\
+    \quad Desvio & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 & 90 \\
+    \quad Alternância & 80,6 & 48 & 77,4 & 48 & 77,4 & 48 & 80 & 48 & 48 & 77,4 & 80 & 90,3 \\
+    \quad Mutantes & NP & NP & 1/4 & 1/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 & 3/4 \\
+    \bottomrule
+  \end{tabular}
 \end{table}
