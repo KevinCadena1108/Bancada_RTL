@@ -1,8 +1,11 @@
 """Gera o apêndice do TCC em LaTeX com os dados completos do experimento.
 
 Organizado como a planilha: (1) uma tabela com o cálculo do ICV de cada módulo; (2) uma tabela por
-módulo, com um bloco por IA (GPT e Gemini) e, em cada bloco, as linhas Linha, Desvio, Alternância,
-FSM e Mutantes, com a rodada 1 ao lado da rodada 2 (6 estratégias em cada).
+módulo, com um bloco por IA (GPT e Gemini) e, em cada bloco, as linhas Linha, Desvio, Alternância
+e Mutantes, com a rodada 1 ao lado da rodada 2 (6 estratégias em cada).
+A cobertura de FSM saiu do trabalho em 2026-11-13: a aproximação por `case` da Bancada pegava o
+Conwaylife (case sobre a soma de vizinhos, não é FSM) e não via as FSMs com `if` (Fancytimer,
+wbuart32). O P_FSM do ICV usa outra detecção e continua valendo.
 Os dados vêm de PLANILHA_R1/R2 (pdf_comum.py) e de coberturas.json — os mesmos da planilha do
 experimento. Usa booktabs (já carregado no preâmbulo do TCC).
 Uso (WSL): python gerar_apendice_latex.py [saida.tex]   (padrão: documentacao/apendice_resultados.tex)
@@ -40,7 +43,7 @@ ICV_BANCADA = {"Lemmings1": 1.0, "Conwaylife": 1.0, "Cout Clock": 1.0, "Exams/20
                "I2C Slave": 2.4, "wbuart32": 2.5}
 ORDEM = list(ICV)
 EST = ["ZS", "FS", "EspZS", "EspFS", "PlnZS", "PlnFS"]
-METS = [("linha", "Linha"), ("branch", "Desvio"), ("toggle", "Alternância"), ("fsm", "FSM")]
+METS = [("linha", "Linha"), ("branch", "Desvio"), ("toggle", "Alternância")]
 
 
 def faixa(v, faixas):
@@ -100,8 +103,8 @@ w("Este apêndice reúne os dados completos do experimento. A Tabela~\\ref{tab:a
   + rotulo(ORDEM[-1]) + "} trazem, para cada módulo e cada LLM, as coberturas (\\%) e os "
   "mutantes mortos de cada estratégia nas duas rodadas. Abreviações: ZS = \\textit{Zero-shot}; "
   "FS = \\textit{Few-shot}; Esp = Especialista; Pln = \\textit{Planning}; $k$/4 = mutantes "
-  "mortos de 4; NP = não passou no circuito original; TO = excedeu o tempo limite. A linha FSM "
-  "aparece só nos módulos em que a métrica se aplica. As coberturas dos \\textit{testbenches} "
+  "mortos de 4; NP = não passou no circuito original; TO = excedeu o tempo limite. "
+  "As coberturas dos \\textit{testbenches} "
   "não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é "
   "interrompida no primeiro erro.")
 w("")

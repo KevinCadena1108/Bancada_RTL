@@ -1,0 +1,135 @@
+% Prompts usados na geração dos testbenches (kit_prompts_testbench, colado pelo autor em 2026-11-09).
+% O texto é o mesmo enviado aos LLMs; só a indentação do código e as quebras das linhas longas
+% foram ajustadas para caber na página. Sem tabela, a pedido do autor: a composição vai em lista.
+
+\section{\textit{Prompts} utilizados}
+\label{ap:prompts}
+
+Este apêndice apresenta os seis \textit{prompts} usados na geração dos \textit{testbenches}. Como eles compartilham trechos, os trechos comuns são mostrados uma única vez, depois da lista abaixo, que indica a ordem em que cada \textit{prompt} foi montado. Em todos eles, \texttt{[MÓDULO]} foi substituído pelo código RTL completo do módulo avaliado. A indentação do código e as quebras das linhas longas foram ajustadas para caber na página.
+
+\begin{itemize}
+  \item \textbf{\textit{Zero-shot}}: ``Crie um testbench para o módulo RTL abaixo.'' seguido de [Módulo e requisitos].
+  \item \textbf{\textit{Few-shot}}: [Exemplos], ``Agora crie um testbench para o módulo RTL abaixo.'' e [Módulo e requisitos].
+  \item \textbf{Especialista \textit{Zero-shot}}: ``Aja como um engenheiro de verificação de hardware. Crie um testbench para o módulo RTL abaixo.'' seguido de [Módulo e requisitos].
+  \item \textbf{Especialista \textit{Few-shot}}: ``Aja como um engenheiro de verificação de hardware.'', [Exemplos], ``Agora crie um testbench para o módulo RTL abaixo.'' e [Módulo e requisitos].
+  \item \textbf{\textit{Planning Zero-shot}}: [Planejamento] seguido de [Módulo e requisitos].
+  \item \textbf{\textit{Planning Few-shot}}: [Exemplos], [Planejamento] e [Módulo e requisitos].
+\end{itemize}
+
+\noindent\textbf{[Exemplos]}, usado nas três estratégias \textit{few-shot}:
+
+{\footnotesize
+\begin{verbatim}
+A seguir estão exemplos de módulos RTL e testbenches corretos. Use-os apenas como referência
+de estrutura, estilo e forma de verificação.
+
+Exemplo 1:
+module comparador4 (
+    input  [3:0] a,
+    input  [3:0] b,
+    output       maior,
+    output       igual,
+    output       menor
+);
+    assign maior = (a > b);
+    assign igual = (a == b);
+    assign menor = (a < b);
+endmodule
+
+module tb;
+    reg  [3:0] a, b;
+    wire maior, igual, menor;
+    integer erros = 0;
+
+    comparador4 dut (.a(a), .b(b), .maior(maior), .igual(igual), .menor(menor));
+
+    initial begin
+        a = 4'd5; b = 4'd3; #1;
+        if ({maior, igual, menor} !== 3'b100) erros = erros + 1;
+        a = 4'd2; b = 4'd9; #1;
+        if ({maior, igual, menor} !== 3'b001) erros = erros + 1;
+        a = 4'd7; b = 4'd7; #1;
+        if ({maior, igual, menor} !== 3'b010) erros = erros + 1;
+        if (erros != 0) $fatal(1, "comparador: %0d erros", erros);
+        $display("[PASSOU] comparador4 ok");
+        $finish;
+    end
+endmodule
+
+Exemplo 2:
+module shift_reg4 (
+    input        clk,
+    input        rst,
+    input        serial_in,
+    output [3:0] q
+);
+    reg [3:0] reg_q;
+
+    always @(posedge clk) begin
+        if (rst)
+            reg_q <= 4'd0;
+        else
+            reg_q <= {reg_q[2:0], serial_in};
+    end
+
+    assign q = reg_q;
+endmodule
+
+module tb;
+    reg clk = 0, rst, serial_in;
+    wire [3:0] q;
+    integer erros = 0;
+
+    shift_reg4 dut (.clk(clk), .rst(rst), .serial_in(serial_in), .q(q));
+
+    always #5 clk = ~clk;
+    task step; begin @(posedge clk); #1; end endtask
+
+    initial begin
+        rst = 1; serial_in = 0; step;
+        if (q !== 4'd0) erros = erros + 1;
+        rst = 0;
+        serial_in = 1; step;
+        if (q !== 4'b0001) erros = erros + 1;
+        serial_in = 0; step;
+        if (q !== 4'b0010) erros = erros + 1;
+        serial_in = 1; step;
+        if (q !== 4'b0101) erros = erros + 1;
+        serial_in = 1; step;
+        if (q !== 4'b1011) erros = erros + 1;
+        if (erros != 0) $fatal(1, "shift: %0d erros", erros);
+        $display("[PASSOU] shift_reg4 ok");
+        $finish;
+    end
+endmodule
+\end{verbatim}
+}
+
+\noindent\textbf{[Planejamento]}, usado nas duas estratégias \textit{Planning}:
+
+{\footnotesize
+\begin{verbatim}
+Antes de gerar o testbench, analise o módulo RTL abaixo. Primeiro, identifique as entradas e
+saídas do módulo, verifique se ele é combinacional ou sequencial, descreva o comportamento
+esperado, identifique estados, operações, ramos, sinais de controle, casos de borda e
+cenários de teste.
+Depois da análise, gere o testbench final.
+\end{verbatim}
+}
+
+\noindent\textbf{[Módulo e requisitos]}, usado nos seis \textit{prompts}:
+
+{\footnotesize
+\begin{verbatim}
+Módulo RTL:
+[MÓDULO]
+
+Requisitos do testbench:
+- O módulo do testbench deve se chamar tb.
+- Instancie o módulo sob teste e compare as saídas com os valores esperados usando !==.
+- Em caso de erro, use $fatal(1, ...) para encerrar com código de erro.
+- Cada $display deve ter a string em uma única linha.
+- Termine com $finish.
+- Deve compilar no Verilator (código sintetizável, sem arquivos externos).
+\end{verbatim}
+}
