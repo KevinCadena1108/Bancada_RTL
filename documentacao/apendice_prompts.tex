@@ -1,29 +1,89 @@
-% Prompts usados na geração dos testbenches (kit_prompts_testbench, colado pelo autor em 2026-11-09).
-% O texto é o mesmo enviado aos LLMs; só a indentação do código e as quebras das linhas longas
-% foram ajustadas para caber na página. Sem tabela, a pedido do autor: a composição vai em lista.
+% Prompts usados na geração dos testbenches (versão do Overleaf, colada pelo autor em 2026-11-15).
+% O texto é o mesmo enviado aos LLMs (kit_prompts_testbench); só a formatação do código e as
+% quebras de linha foram ajustadas para a página.
 
 \section{\textit{Prompts} utilizados}
 \label{ap:prompts}
 
-Este apêndice apresenta os seis \textit{prompts} usados na geração dos \textit{testbenches}. Como eles compartilham trechos, os trechos comuns são mostrados uma única vez, depois da lista abaixo, que indica a ordem em que cada \textit{prompt} foi montado. Em todos eles, \texttt{[MÓDULO]} foi substituído pelo código RTL completo do módulo avaliado. A indentação do código e as quebras das linhas longas foram ajustadas para caber na página.
+Este apêndice apresenta a composição dos seis \textit{prompts} utilizados no experimento. Como alguns trechos são repetidos entre as estratégias, os exemplos, o planejamento e os requisitos comuns são apresentados uma única vez. Em cada execução, \texttt{[MÓDULO]} foi substituído pelo código RTL completo do módulo avaliado. A formatação do código e as quebras de linha foram ajustadas apenas para facilitar a apresentação no documento, sem alterar o conteúdo dos \textit{prompts}.
+
+\subsection{Composição das estratégias}
+
+Os seis \textit{prompts} foram organizados da seguinte forma:
 
 \begin{itemize}
-  \item \textbf{\textit{Zero-shot}}: ``Crie um testbench para o módulo RTL abaixo.'' seguido de [Módulo e requisitos].
-  \item \textbf{\textit{Few-shot}}: [Exemplos], ``Agora crie um testbench para o módulo RTL abaixo.'' e [Módulo e requisitos].
-  \item \textbf{Especialista \textit{Zero-shot}}: ``Aja como um engenheiro de verificação de hardware. Crie um testbench para o módulo RTL abaixo.'' seguido de [Módulo e requisitos].
-  \item \textbf{Especialista \textit{Few-shot}}: ``Aja como um engenheiro de verificação de hardware.'', [Exemplos], ``Agora crie um testbench para o módulo RTL abaixo.'' e [Módulo e requisitos].
-  \item \textbf{\textit{Planning Zero-shot}}: [Planejamento] seguido de [Módulo e requisitos].
-  \item \textbf{\textit{Planning Few-shot}}: [Exemplos], [Planejamento] e [Módulo e requisitos].
+    \item \textbf{\textit{Zero-shot}}: solicitação direta + módulo RTL + requisitos;
+
+    \item \textbf{\textit{Few-shot}}: exemplos + solicitação direta + módulo RTL + requisitos;
+
+    \item \textbf{Especialista \textit{Zero-shot}}: papel de especialista + solicitação direta + módulo RTL + requisitos;
+
+    \item \textbf{Especialista \textit{Few-shot}}: papel de especialista + exemplos + solicitação direta + módulo RTL + requisitos;
+
+    \item \textbf{\textit{Planning Zero-shot}}: planejamento + módulo RTL + requisitos;
+
+    \item \textbf{\textit{Planning Few-shot}}: exemplos + planejamento + módulo RTL + requisitos.
 \end{itemize}
 
-\noindent\textbf{[Exemplos]}, usado nas três estratégias \textit{few-shot}:
 
-{\footnotesize
+\subsection{Instruções específicas}
+
+Na estratégia \textit{Zero-shot}, foi utilizada a seguinte solicitação:
+
+\begingroup
+\footnotesize
 \begin{verbatim}
-A seguir estão exemplos de módulos RTL e testbenches corretos. Use-os apenas como referência
-de estrutura, estilo e forma de verificação.
+Crie um testbench para o módulo RTL abaixo.
+\end{verbatim}
+\endgroup
 
-Exemplo 1:
+Na estratégia Especialista \textit{Zero-shot}, foi utilizada:
+
+\begingroup
+\footnotesize
+\begin{verbatim}
+Aja como um engenheiro de verificação de hardware.
+Crie um testbench para o módulo RTL abaixo.
+\end{verbatim}
+\endgroup
+
+Nas estratégias \textit{Few-shot} e Especialista \textit{Few-shot}, após os exemplos, foi utilizada a seguinte solicitação:
+
+\begingroup
+\footnotesize
+\begin{verbatim}
+Agora crie um testbench para o módulo RTL abaixo.
+\end{verbatim}
+\endgroup
+
+Na estratégia Especialista \textit{Few-shot}, antes dos exemplos, foi adicionada a instrução:
+
+\begingroup
+\footnotesize
+\begin{verbatim}
+Aja como um engenheiro de verificação de hardware.
+\end{verbatim}
+\endgroup
+
+
+\subsection{Exemplos das estratégias \textit{Few-shot}}
+
+As estratégias \textit{Few-shot}, Especialista \textit{Few-shot} e \textit{Planning Few-shot} utilizaram os mesmos dois exemplos, precedidos pela seguinte instrução:
+
+\begingroup
+\footnotesize
+\begin{verbatim}
+A seguir estão exemplos de módulos RTL e testbenches corretos.
+Use-os apenas como referência de estrutura, estilo e forma de
+verificação.
+\end{verbatim}
+\endgroup
+
+\noindent\textbf{Exemplo 1}
+
+\begingroup
+\footnotesize
+\begin{verbatim}
 module comparador4 (
     input  [3:0] a,
     input  [3:0] b,
@@ -31,9 +91,11 @@ module comparador4 (
     output       igual,
     output       menor
 );
+
     assign maior = (a > b);
     assign igual = (a == b);
     assign menor = (a < b);
+
 endmodule
 
 module tb;
@@ -41,28 +103,50 @@ module tb;
     wire maior, igual, menor;
     integer erros = 0;
 
-    comparador4 dut (.a(a), .b(b), .maior(maior), .igual(igual), .menor(menor));
+    comparador4 dut (
+        .a(a),
+        .b(b),
+        .maior(maior),
+        .igual(igual),
+        .menor(menor)
+    );
 
     initial begin
         a = 4'd5; b = 4'd3; #1;
-        if ({maior, igual, menor} !== 3'b100) erros = erros + 1;
+        if ({maior, igual, menor} !== 3'b100)
+            erros = erros + 1;
+
         a = 4'd2; b = 4'd9; #1;
-        if ({maior, igual, menor} !== 3'b001) erros = erros + 1;
+        if ({maior, igual, menor} !== 3'b001)
+            erros = erros + 1;
+
         a = 4'd7; b = 4'd7; #1;
-        if ({maior, igual, menor} !== 3'b010) erros = erros + 1;
-        if (erros != 0) $fatal(1, "comparador: %0d erros", erros);
+        if ({maior, igual, menor} !== 3'b010)
+            erros = erros + 1;
+
+        if (erros != 0)
+            $fatal(1, "comparador: %0d erros", erros);
+
         $display("[PASSOU] comparador4 ok");
         $finish;
     end
 endmodule
+\end{verbatim}
+\endgroup
 
-Exemplo 2:
+
+\noindent\textbf{Exemplo 2}
+
+\begingroup
+\footnotesize
+\begin{verbatim}
 module shift_reg4 (
     input        clk,
     input        rst,
     input        serial_in,
     output [3:0] q
 );
+
     reg [3:0] reg_q;
 
     always @(posedge clk) begin
@@ -73,6 +157,7 @@ module shift_reg4 (
     end
 
     assign q = reg_q;
+
 endmodule
 
 module tb;
@@ -80,56 +165,108 @@ module tb;
     wire [3:0] q;
     integer erros = 0;
 
-    shift_reg4 dut (.clk(clk), .rst(rst), .serial_in(serial_in), .q(q));
+    shift_reg4 dut (
+        .clk(clk),
+        .rst(rst),
+        .serial_in(serial_in),
+        .q(q)
+    );
 
     always #5 clk = ~clk;
-    task step; begin @(posedge clk); #1; end endtask
+
+    task step;
+        begin
+            @(posedge clk);
+            #1;
+        end
+    endtask
 
     initial begin
-        rst = 1; serial_in = 0; step;
-        if (q !== 4'd0) erros = erros + 1;
+        rst = 1;
+        serial_in = 0;
+        step;
+        if (q !== 4'd0)
+            erros = erros + 1;
+
         rst = 0;
-        serial_in = 1; step;
-        if (q !== 4'b0001) erros = erros + 1;
-        serial_in = 0; step;
-        if (q !== 4'b0010) erros = erros + 1;
-        serial_in = 1; step;
-        if (q !== 4'b0101) erros = erros + 1;
-        serial_in = 1; step;
-        if (q !== 4'b1011) erros = erros + 1;
-        if (erros != 0) $fatal(1, "shift: %0d erros", erros);
+
+        serial_in = 1;
+        step;
+        if (q !== 4'b0001)
+            erros = erros + 1;
+
+        serial_in = 0;
+        step;
+        if (q !== 4'b0010)
+            erros = erros + 1;
+
+        serial_in = 1;
+        step;
+        if (q !== 4'b0101)
+            erros = erros + 1;
+
+        serial_in = 1;
+        step;
+        if (q !== 4'b1011)
+            erros = erros + 1;
+
+        if (erros != 0)
+            $fatal(1, "shift: %0d erros", erros);
+
         $display("[PASSOU] shift_reg4 ok");
         $finish;
     end
 endmodule
 \end{verbatim}
-}
+\endgroup
 
-\noindent\textbf{[Planejamento]}, usado nas duas estratégias \textit{Planning}:
 
-{\footnotesize
+\subsection{Planejamento}
+
+As estratégias \textit{Planning Zero-shot} e \textit{Planning Few-shot} utilizaram a seguinte instrução:
+
+\begingroup
+\footnotesize
 \begin{verbatim}
-Antes de gerar o testbench, analise o módulo RTL abaixo. Primeiro, identifique as entradas e
-saídas do módulo, verifique se ele é combinacional ou sequencial, descreva o comportamento
-esperado, identifique estados, operações, ramos, sinais de controle, casos de borda e
-cenários de teste.
+Antes de gerar o testbench, analise o módulo RTL abaixo.
+Primeiro, identifique as entradas e saídas do módulo, verifique
+se ele é combinacional ou sequencial, descreva o comportamento
+esperado, identifique estados, operações, ramos, sinais de
+controle, casos de borda e cenários de teste.
+
 Depois da análise, gere o testbench final.
 \end{verbatim}
-}
+\endgroup
 
-\noindent\textbf{[Módulo e requisitos]}, usado nos seis \textit{prompts}:
 
-{\footnotesize
+\subsection{Módulo RTL e requisitos comuns}
+
+Em todas as estratégias, o módulo avaliado foi inserido no seguinte ponto:
+
+\begingroup
+\footnotesize
 \begin{verbatim}
 Módulo RTL:
-[MÓDULO]
 
+[MÓDULO]
+\end{verbatim}
+\endgroup
+
+Todos os \textit{prompts} receberam o mesmo conjunto de requisitos:
+
+\begingroup
+\footnotesize
+\begin{verbatim}
 Requisitos do testbench:
+
 - O módulo do testbench deve se chamar tb.
-- Instancie o módulo sob teste e compare as saídas com os valores esperados usando !==.
-- Em caso de erro, use $fatal(1, ...) para encerrar com código de erro.
+- Instancie o módulo sob teste e compare as saídas com os
+  valores esperados usando !==.
+- Em caso de erro, use $fatal(1, ...) para encerrar com
+  código de erro.
 - Cada $display deve ter a string em uma única linha.
 - Termine com $finish.
-- Deve compilar no Verilator (código sintetizável, sem arquivos externos).
+- Deve compilar no Verilator
+  (código sintetizável, sem arquivos externos).
 \end{verbatim}
-}
+\endgroup
