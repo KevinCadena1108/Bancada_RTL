@@ -409,36 +409,14 @@ representa([
     f"O desempenho não piorou junto com o ICV. A classe Média teve o menor <i>score</i> efetivo "
     f"({pct(cl_ef['Média'])}), abaixo da Muito Alta ({pct(cl_ef['Muito Alta'])}).",
     "Isso veio de três módulos da classe Média. No Cs450/gshare, metade dos <i>testbenches</i> foi "
-    "reprovada e nenhum do Gemini detectou mais de um mutante. No CORDIC, um mutante não pode ser "
-    "detectado (seção 7). No Fancytimer, 10 dos 24 foram reprovados.",
+    "reprovada e nenhum do Gemini detectou mais de um mutante. No CORDIC, um dos mutantes é "
+    "equivalente, ou seja, não muda o circuito e não pode ser detectado. No Fancytimer, 10 dos 24 foram reprovados.",
     "O ICV mede o tamanho e a estrutura do código. A dificuldade desses módulos está no "
     "comportamento, como contar o tempo certo ou treinar uma tabela de previsão. A classe Alta tem "
     "um módulo só, então não permite generalizar."])
 
-# ---- 7. Mutante equivalente
-st(P("7. O mutante equivalente do CORDIC", "h1"))
-st(P("Um mutante é equivalente quando a mudança não altera o comportamento do circuito. Nenhum "
-     "<i>testbench</i> consegue detectá-lo."))
-st(P("No CORDIC, um dos quatro mutantes troca <font name='DVM'>if (init)</font> por "
-     "<font name='DVM'>if (!init)</font> na linha 76. Essa linha está dentro de um bloco "
-     "<font name='DVM'>`ifdef ITERATE</font>, e a definição de <font name='DVM'>ITERATE</font> está "
-     "comentada no código. Por isso a linha nem é compilada, e o circuito mutado é igual ao "
-     "original. O máximo possível no CORDIC é 3 de 4, e de fato nenhum dos 24 <i>testbenches</i> "
-     "passou disso (Tabela 10)."))
-st(P("Nos outros módulos, exceto o Cs450/gshare, algum <i>testbench</i> detectou os 4 mutantes, o "
-     "que mostra que nenhum deles é equivalente. No Cs450/gshare, o máximo foi 3. O mutante que "
-     "sobra troca um <font name='DVM'>^</font> por <font name='DVM'>&amp;</font> no índice de "
-     "escrita da tabela, na linha 34. Ele muda o circuito, mas só é detectado por um "
-     "<i>testbench</i> que treina a tabela e depois confere a previsão naquela posição. Por isso "
-     "ele é difícil de detectar, mas não impossível."))
-representa([
-    "O mutante equivalente baixa o <i>score</i> do CORDIC para todas as estratégias igualmente. "
-    "Ele reduz o valor absoluto, mas não muda a comparação entre elas.",
-    "Ele também afeta a seção 9. Um <i>testbench</i> do CORDIC com 100% de cobertura sempre "
-    "deixa um mutante vivo, então os números são mostrados também sem o CORDIC."])
-
-# ---- 8. Cobertura dos aprovados
-st(P("8. Cobertura dos <i>testbenches</i> aprovados", "h1"))
+# ---- 7. Cobertura dos aprovados
+st(P("7. Cobertura dos <i>testbenches</i> aprovados", "h1"))
 st(P("A cobertura mede quanto do circuito o <i>testbench</i> exercitou, e o Verilator mede três "
      "tipos."))
 st(item("<b>Linha.</b> Porcentagem das linhas do código que foram executadas pelo menos uma vez."))
@@ -479,8 +457,8 @@ representa([
     "Cada estratégia teve um número diferente de aprovados, em módulos diferentes. Por isso essas "
     "médias devem ser comparadas com cautela."])
 
-# ---- 9. 100% de cobertura com mutante vivo
-st(P("9. 100% de cobertura com mutante vivo", "h1"))
+# ---- 8. 100% de cobertura com mutante vivo
+st(P("8. 100% de cobertura com mutante vivo", "h1"))
 st(P("<b>Como se calcula.</b> Para cada tipo de cobertura, pegam-se os <i>testbenches</i> aprovados "
      "que chegaram a 100% e conta-se quantos deixaram pelo menos um mutante sem detectar, ou seja, "
      "detectaram menos de 4."))
@@ -499,30 +477,13 @@ for k in MET:
 tab("Tabela 14. Testbenches aprovados com 100% de cobertura e algum mutante vivo",
     ["Cobertura", "Vivos de 100%", "Proporção", "GPT", "Gemini", "Sem o CORDIC"], lin,
     [24 * mm, 26 * mm, 22 * mm, 34 * mm, 34 * mm, 34 * mm],
-    nota="Nenhum <i>testbench</i> do CORDIC chegou a 100% de linha, então na linha os números "
-         "com e sem ele são iguais.")
+    nota="Um mutante do CORDIC é equivalente e não pode ser detectado, então todo "
+         "<i>testbench</i> dele deixa um mutante vivo. Na linha, nenhum do CORDIC chegou a 100%.")
 representa([
-    "Ter 100% de cobertura não garantiu detectar todas as falhas. Na linha, mais da metade dos "
-    "<i>testbenches</i> com cobertura completa deixou algum mutante vivo.",
-    "Isso acontece porque a cobertura só mostra que o código foi executado. Ela não mostra se o "
-    "<i>testbench</i> conferiu a saída. Um <i>testbench</i> pode passar por todas as linhas e "
-    "nunca comparar o resultado com o esperado.",
+    "Ter 100% de cobertura não garantiu detectar todas as falhas. A cobertura só mostra que o "
+    "código foi executado, e não se o <i>testbench</i> conferiu a saída.",
     "O problema foi bem maior no Gemini, o que bate com o <i>score</i> dos aprovados menor. Esse "
     "resultado justifica usar o teste de mutação como métrica principal do trabalho."])
-
-# ---- 10. Cuidados
-st(P("10. Cuidados ao interpretar", "h1"))
-for txt in [
-    "Os resultados são descritivos. Com 10 módulos e 2 rodadas, não foram aplicados testes de "
-    "hipótese, então as diferenças indicam tendências, e não diferenças comprovadas.",
-    "Cada módulo tem só 4 mutantes. Um mutante a mais ou a menos muda o resultado de um "
-    "<i>testbench</i> em 25 pontos.",
-    "A resposta de um LLM muda de uma rodada para outra, como mostra a inversão do GPT na Tabela 5. "
-    "Com só 2 rodadas, parte das diferenças pode ser variação aleatória.",
-    "Foram usados dois LLMs. Os resultados podem não valer para outros modelos.",
-    "A classe Alta tem um módulo só, e o CORDIC tem um mutante equivalente.",
-]:
-    st(item(txt))
 
 construir(saida("resultados_explicados.pdf"), story, TITULO)
 print("ok:", saida("resultados_explicados.pdf"))
