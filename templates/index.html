@@ -453,7 +453,7 @@
   }
   .cov-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
   }
   @media (max-width: 760px) {
@@ -721,8 +721,9 @@ function render(d) {
     $("cov-val").textContent = c.pct + "%";
     $("cov-val").className = "value " + (c.pct >= 80 ? "ok" : c.pct >= 50 ? "warn" : "bad");
     $("cov-unit").textContent = c.cobertos + " / " + c.total + " pontos";
-    // por tipo: sempre os 4 cartoes; tipo sem pontos no modulo vira
-    // "sem cobertura", igual ao de maquina de estados
+    // por tipo: sempre os 3 cartoes (linha, desvio, alternancia); tipo sem
+    // pontos no modulo vira "sem cobertura". A cobertura de FSM saiu do TCC
+    // (2026-11-13): continua calculada na API (c.fsm), mas nao e' mostrada.
     const grid = $("cov-grid");
     grid.innerHTML = "";
     const PRINCIPAIS = ["line", "branch", "toggle"];
@@ -736,7 +737,6 @@ function render(d) {
         return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
       })
       .forEach((k) => grid.appendChild(covCard(NOMES_TIPO[k] || k, c.por_tipo[k])));
-    grid.appendChild(covCard("Máquina de estados", c.fsm));
     $("cov-section").classList.add("show");
   } else {
     $("cov-val").textContent = "—";
