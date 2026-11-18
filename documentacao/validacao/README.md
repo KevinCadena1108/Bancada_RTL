@@ -15,7 +15,11 @@ Metodologia do TCC.
 | `prova_fsm_detector101.pdf` | detector de "101": resultado da API ligado ponto a ponto ao `coverage.dat` |
 | `comparacao_api_manual.docx` | somador de 32 bits, temporizador (FSM com `case`) e Fancytimer (FSM com `if`): comandos manuais, saída do terminal e capturas de tela da API |
 
-Os três documentos foram feitos pelo autor em 2026-11-06.
+Os três documentos foram feitos pelo autor em 2026-11-06. Os dois PDFs foram refeitos em
+2026-11-18 por `analise/documentos/gerar_pdfs_drive.py` (são os mesmos `prova_cobertura.pdf` e
+`prova_fsm_completo.pdf` de `documentacao/drive/`): o código agora mostra `<=` e `&&` (antes saía
+`&lt;=` e `&amp;&amp;`), a linha 12 do detector de "11" é o bloco `always` (não o `assign`) e a
+cobertura de FSM saiu. Os números foram conferidos de novo no Verilator 5.032.
 
 ## Os 5 casos
 

@@ -1,0 +1,14 @@
+C '|f=dut.v|l=10|n=5|page=v_line/seq_detector|o=block|S=10|h=tb.dut' 7
+C '|f=dut.v|l=11|n=10|page=v_branch/seq_detector|o=else|S=13-14|h=tb.dut' 6
+C '|f=dut.v|l=11|n=9|page=v_branch/seq_detector|o=if|S=11-12|h=tb.dut' 1
+C '|f=dut.v|l=15|n=18|page=v_line/seq_detector|o=case|S=15|h=tb.dut' 1
+C '|f=dut.v|l=16|n=18|page=v_line/seq_detector|o=case|S=16|h=tb.dut' 2
+C '|f=dut.v|l=17|n=18|page=v_line/seq_detector|o=case|S=17|h=tb.dut' 2
+C '|f=dut.v|l=18|n=18|page=v_line/seq_detector|o=case|S=18|h=tb.dut' 1
+C '|f=dut.v|l=19|n=17|page=v_line/seq_detector|o=case|S=19|h=tb.dut' 0
+C '|f=dut.v|l=2|n=11|page=v_toggle/seq_detector|o=clk|h=tb.dut' 13
+C '|f=dut.v|l=3|n=11|page=v_toggle/seq_detector|o=rst|h=tb.dut' 2
+C '|f=dut.v|l=4|n=11|page=v_toggle/seq_detector|o=x|h=tb.dut' 5
+C '|f=dut.v|l=5|n=12|page=v_toggle/seq_detector|o=y|h=tb.dut' 3
+C '|f=dut.v|l=8|n=15|page=v_toggle/seq_detector|o=state[0]|h=tb.dut' 5
+C '|f=dut.v|l=8|n=15|page=v_toggle/seq_detector|o=state[1]|h=tb.dut' 3

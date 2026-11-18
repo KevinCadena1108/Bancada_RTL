@@ -2,7 +2,8 @@
 """Gera o PDF "Posto médio das estratégias de prompt" (método, resultados e referência).
 
 Os dados vêm do pdf_comum.py (PLANILHA_R1 e PLANILHA_R2), o mesmo lugar dos outros PDFs; o valor
-analisado é a média das 2 rodadas. Os postos médios conferem com os do PDF do Friedman.
+analisado é a média das 2 rodadas. Os postos médios são os mesmos da seção Resultados do TCC
+(3,675 e 3,625 aparecem com 3 casas porque são exatos).
 Uso: python gera_pdf_posto.py [saida.pdf]   (padrão: documentacao/posto_medio_passo_a_passo.pdf)
 """
 import os
@@ -24,8 +25,8 @@ EST = ["ZS", "FS", "EspZS", "EspFS", "PlnZS", "PlnFS"]
 ESTLONG = ["Zero-shot", "Few-shot", "Especialista Zero-shot", "Especialista Few-shot",
            "Planning Zero-shot", "Planning Few-shot"]
 # nomes curtos dos circuitos, na ordem de CIRCUITOS do pdf_comum
-NOMES = ["Fsm serialdp", "Exams q2fsm", "Cout Clock", "Cs450/gshare", "Lemmings", "wbuart32",
-         "Cordic", "Conwaylife", "fancytimer", "I2C Slave"]
+NOMES = ["Fsm serialdp", "Exams/2012 q2fsm", "Count clock", "Cs450/gshare", "Lemmings1",
+         "wbuart32", "CORDIC", "Conwaylife", "Fancytimer", "SPI Master"]
 
 
 def bloco(modelo):
@@ -61,7 +62,12 @@ def f1(x):
 
 
 def f2(x):
-    return f"{x:.2f}".replace(".", ",")
+    """Posto médio: 2 casas, ou 3 quando o valor exato tem 3 casas (3,675 e 3,625), como no TCC.
+    Com 2 casas fixas, 3,675 virava 3,67 e 3,625 virava 3,62."""
+    s = f"{x:.3f}"
+    if s.endswith("0"):
+        s = s[:-1]
+    return s.replace(".", ",")
 
 
 # ---------- estilos ----------
@@ -116,8 +122,8 @@ st(P("Posto médio da estratégia j:  <b>R<sub>j</sub> = (1/N) · Σ<sub>i</sub>
      "onde r<sub>i</sub><super>j</super> é o posto da estratégia j no circuito i e N é o número de "
      "circuitos.", SMALL))
 tb = Table([[P("<b>Fonte da fórmula:</b> o ranqueamento de métodos por posto médio sobre múltiplos "
-               "conjuntos de dados é estabelecido por DEMŠAR (2006); os postos seguem o teste de "
-               "FRIEDMAN (1937). A prática de repetir as execuções de algoritmos aleatórios (os LLMs) "
+               "conjuntos de dados é estabelecido por DEMŠAR (2006); o ranqueamento por postos vem "
+               "de FRIEDMAN (1937). A prática de repetir as execuções de algoritmos aleatórios (os LLMs) "
                "e analisar a média é recomendada por ARCURI; BRIAND (2011).", SMALL)]],
            colWidths=[174 * mm])
 tb.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#eaf2fa")),
@@ -252,15 +258,15 @@ st(P("5. Como os resultados foram obtidos", H1))
 st(B("Os valores vêm da planilha do experimento (linha “Mutantes” de cada circuito), nas 2 rodadas."))
 st(B("Para cada circuito calcula-se a média das 2 rodadas, os postos (passos 2 e 3) e, ao final, o "
      "posto médio."))
-st(B("O cálculo é reproduzível por script (Python) e os postos médios conferem com os do teste de "
-     "Friedman."))
+st(B("O cálculo é reproduzível por script (analise/estatistica/gera_pdf_posto.py), e os postos "
+     "médios são os mesmos da seção Resultados do TCC."))
 
 # 6. interpretação
 st(KeepTogether([P("6. Interpretação e ressalvas", H1), P(f"O posto médio <b>ordena</b> as estratégias (aponta {ESTLONG[ordem[0]]} em 1º e "
-     f"{ESTLONG[ordem[-1]]} em último), mas, sozinho, não prova que o 1º é significativamente melhor "
-     "que o 2º. Para isso usa-se a diferença crítica de Nemenyi, que neste caso mostra que as "
-     "estratégias do topo estão empatadas. Assim, a leitura correta é “as variantes few-shot lideram "
-     "e o zero-shot é o pior”, sem eleger uma única melhor.")]))
+     f"{ESTLONG[ordem[-1]]} em último), mas, sozinho, não prova que uma estratégia é "
+     "significativamente melhor que outra. No TCC, ele é usado de forma descritiva, junto com o "
+     "score efetivo. Com os dois modelos juntos, as três variantes few-shot ocupam as primeiras "
+     "posições e o Zero-shot fica em último.")]))
 st(P("O posto médio é uma comparação <b>entre estratégias</b>, interna a cada modelo (a soma dos postos "
      "médios é sempre 21, no GPT e no Gemini). Por isso ele <b>não</b> compara GPT × Gemini: para "
      "comparar os modelos usam-se métricas absolutas (score efetivo, taxa de aprovação), e essa "
