@@ -4,7 +4,30 @@
 \section{Resultados detalhados}
 \label{ap:resultados}
 
-Este apêndice reúne os dados completos do experimento. A Tabela~\ref{tab:ap_icv} mostra o cálculo do ICV de cada módulo, e as Tabelas~\ref{tab:ap_lemmings1} a~\ref{tab:ap_wbuart32} trazem, para cada módulo e cada LLM, as coberturas (\%) e os mutantes mortos de cada estratégia nas duas rodadas. Abreviações: ZS = \textit{Zero-shot}; FS = \textit{Few-shot}; Esp = Especialista; Pln = \textit{Planning}; $k$/4 = mutantes mortos de 4; NP = não passou no circuito original; TO = excedeu o tempo limite. As coberturas dos \textit{testbenches} não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é interrompida no primeiro erro.
+Este apêndice reúne os módulos utilizados e os dados completos do experimento. A Tabela~\ref{tab:modulos} apresenta a origem e a função de cada módulo, e a Tabela~\ref{tab:ap_icv} mostra o cálculo do ICV. Em seguida, as Tabelas~\ref{tab:ap_lemmings1} a~\ref{tab:ap_wbuart32} trazem, para cada módulo e cada LLM, as coberturas (\%) e os mutantes detectados por cada estratégia nas duas rodadas. Nessas tabelas, ZS indica \textit{Zero-shot}, FS indica \textit{Few-shot}, Esp indica Especialista e Pln indica \textit{Planning}. Nos mutantes, $k$/4 indica quantos dos 4 mutantes foram detectados, NP indica que o \textit{testbench} não passou no circuito original e TO indica que ele excedeu o tempo limite. As coberturas dos \textit{testbenches} não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é interrompida no primeiro erro. Por isso, um \textit{testbench} reprovado pode apresentar cobertura alta, inclusive de 100\%, quando exercita todo o circuito e falha em uma verificação próxima ao final da simulação.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Módulos utilizados}
+  \label{tab:modulos}
+  \footnotesize
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Módulo & Origem & Função \\
+    \midrule
+    Lemmings1 & HDLBits & controle de direção de personagem \\
+    Conwaylife & HDLBits & Jogo da Vida em grade 16$\times$16 \\
+    Count clock & HDLBits & relógio de 12 horas \\
+    Exams/2012 q2fsm & HDLBits & máquina de estados \\
+    Cs450/gshare & HDLBits & preditor de desvios \\
+    Fancytimer & HDLBits & temporizador acionado por sequência \\
+    CORDIC & OpenCores & cálculo trigonométrico em \textit{pipeline} \\
+    Fsm serialdp & HDLBits & receptor serial com paridade \\
+    SPI Master & OpenCores & mestre de comunicação SPI \\
+    wbuart32 & OpenCores & transmissor UART \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \begin{table}[htbp]
   \centering
@@ -31,7 +54,7 @@ Este apêndice reúne os dados completos do experimento. A Tabela~\ref{tab:ap_ic
   \end{tabular}
 
   \smallskip
-  {\footnotesize Entre parênteses, a pontuação de cada componente. Lógica: A = aritmética, D = deslocamento, P = estruturas replicadas. $\mathrm{ICV} = 0{,}30P_{\mathrm{LOC}} + 0{,}30P_{\mathrm{FSM}} + 0{,}20P_{\mathrm{IO}} + 0{,}20P_{\mathrm{LOG}}$.}
+  {\footnotesize Entre parênteses, a pontuação de cada componente. Estados: número de estados identificado pela Bancada RTL; -- indica módulo sem máquina de estados. Lógica: A = aritmética, D = deslocamento, P = estruturas replicadas. $\mathrm{ICV} = 0{,}30P_{\mathrm{LOC}} + 0{,}30P_{\mathrm{FSM}} + 0{,}20P_{\mathrm{IO}} + 0{,}20P_{\mathrm{LOG}}$.}
 \end{table}
 
 \begin{table}[htbp]

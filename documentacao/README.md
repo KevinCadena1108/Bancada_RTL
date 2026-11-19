@@ -13,7 +13,7 @@ Todos os PDFs são gerados por scripts em `analise/`. Os números vêm da planil
 | Arquivo | O que é | Gerado por |
 |---|---|---|
 | `apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
-| `apendice_resultados.tex` | Apêndice B do TCC: ICV de cada módulo e uma tabela de resultados por módulo | `analise/estatistica/gerar_apendice_latex.py` |
+| `apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados (origem e função), cálculo do ICV e uma tabela de resultados por módulo | `analise/estatistica/gerar_apendice_latex.py` |
 | `figuras/processo_trabalho.pdf` e `.png` | figura das 4 etapas do trabalho (preparação, geração, avaliação, análise) | `analise/figuras/figura_processo.py` |
 | `resultados_explicados.pdf` | cada resultado da seção Resultados, com o cálculo passo a passo e o que ele representa | `analise/estatistica/gerar_pdf_resultados.py` |
 | `posto_medio_passo_a_passo.pdf` | o posto médio explicado, com a fonte da fórmula e os resultados de cada estratégia | `analise/estatistica/gera_pdf_posto.py` |
@@ -40,8 +40,24 @@ continuam os mesmos.
 `drive/fontes/` guarda os módulos, testbenches e trechos de `coverage.dat` usados nas provas,
 todos de execução real no Verilator 5.032.
 
+A pasta do Drive também tem `resultados_explicados.pdf` e `posto_medio_passo_a_passo.pdf`, enviados
+em 19/11/2026. No repositório, eles ficam direto em `documentacao/`.
+
 Os arquivos do Drive "Comparação API/mão" e "prompting" são documentos do Google e não têm cópia
 aqui. A versão em Word da comparação está em `validacao/comparacao_api_manual.docx`.
+
+## Conferência com o TCC
+
+Em 19/11/2026 a documentação foi comparada com o PDF do TCC II (21 páginas).
+
+- Os dois apêndices em LaTeX estão iguais aos do TCC. Nas 10 tabelas de módulos e na tabela do ICV,
+  todos os valores foram comparados um a um.
+- `resultados_explicados.pdf` usa os mesmos números das Tabelas 3, 4 e 5 do TCC, com uma casa
+  decimal. O gerador confere esses números com `assert`.
+- A Tabela 2 do TCC (validação) é a soma dos pontos de linha, desvio e alternância de
+  `validacao/resultado.md`.
+- A figura do processo deste repositório é mais nova que a do PDF do TCC. A do repositório não fala
+  em classes de ICV.
 
 ## Como gerar de novo
 

@@ -150,6 +150,22 @@ assert len(TB) == 240 and len(APROV) == 175 and n(ef(TB)) == "54,1"
 assert [npos(x) for x in PM["J"]] == ["2,35", "3,675", "3,30", "3,75", "3,625", "4,30"]
 assert n(cobmed(sel(e=5, ok=True), "branch")) == "90,8"
 assert cheio("linha") == (122, 63) and cheio("branch") == (116, 58) and cheio("toggle") == (56, 18)
+
+
+def prop(par):
+    """Proporção da Tabela 5 do TCC, com uma casa (ex.: 63 de 122 = 51,6%)."""
+    t, v = par
+    return pct(Fraction(100 * v, t))
+
+
+# Tabela 5 do TCC (PDF de 19/11/2026): total, GPT, Gemini e sem o CORDIC.
+assert [prop(cheio(k)) for k in ("linha", "branch", "toggle")] == ["51,6%", "50,0%", "32,1%"]
+assert [prop(cheio(k, [G])) for k in ("linha", "branch", "toggle")] == ["32,3%", "38,7%", "25,8%"]
+assert [prop(cheio(k, [GM])) for k in ("linha", "branch", "toggle")] == ["71,7%", "63,0%", "40,0%"]
+assert [prop(cheio(k, sem_cordic=True)) for k in ("branch", "toggle")] == ["46,8%", "29,6%"]
+# Tabela 4 do TCC: alternância média dos aprovados vai de 71,0% (ZS) a 74,1% (EspFS).
+_alt = [pct(cobmed(sel(e=e, ok=True), "toggle")) for e in range(6)]
+assert (_alt[0], _alt[3], min(_alt), max(_alt)) == ("71,0%", "74,1%", "71,0%", "74,1%"), _alt
 assert all(p == 3.5 for p in classif(G, D["Lemmings1"])[1])          # citado na seção 5
 assert max(t["k"] for t in sel(d=D["Cordic"])) == 3                   # mutante equivalente
 assert max(t["k"] for t in sel(GM, d=D["Cs450/gshare"])) == 1 and apr(sel(d=D["Cs450/gshare"])) == 12
@@ -199,10 +215,9 @@ tab("Tabela 1. O que cada resultado responde",
      ["Posto médio", "Qual estratégia fica à frente dentro de cada módulo?",
       f"PlnFS {npos(PM['J'][5])} (melhor) e ZS {npos(PM['J'][0])} (pior)"],
      ["Cobertura dos aprovados", "Quanto do circuito os <i>testbenches</i> exercitam?",
-      "Linha e desvio acima de 89%, alternância entre 71% e 75%"],
+      "Linha e desvio acima de 89%, alternância entre 71,0% e 74,1%"],
      ["100% de cobertura com mutante vivo", "Cobertura completa garante detectar as falhas?",
-      f"Não. {lin_cheio[1]} de {lin_cheio[0]} "
-      f"({pct(Fraction(100 * lin_cheio[1], lin_cheio[0]), 0)}) na linha"]],
+      f"Não. {lin_cheio[1]} de {lin_cheio[0]} ({prop(lin_cheio)}) na linha"]],
     [40 * mm, 74 * mm, 60 * mm])
 
 # ---- 1. Dados de partida
@@ -420,10 +435,10 @@ for k in MET:
     tg, vg = cheio(k, [G])
     tm, vm = cheio(k, [GM])
     ts, vs = cheio(k, sem_cordic=True)
-    lin.append([NOME_MET[k], f"{v} de {t}", pct(Fraction(100 * v, t), 0),
-                f"{vg} de {tg} ({pct(Fraction(100 * vg, tg))})",
-                f"{vm} de {tm} ({pct(Fraction(100 * vm, tm))})",
-                f"{vs} de {ts} ({pct(Fraction(100 * vs, ts), 0)})"])
+    lin.append([NOME_MET[k], f"{v} de {t}", prop((t, v)),
+                f"{vg} de {tg} ({prop((tg, vg))})",
+                f"{vm} de {tm} ({prop((tm, vm))})",
+                f"{vs} de {ts} ({prop((ts, vs))})"])
 tab("Tabela 11. Testbenches aprovados com 100% de cobertura e algum mutante vivo",
     ["Cobertura", "Vivos de 100%", "Proporção", "GPT", "Gemini", "Sem o CORDIC"], lin,
     [24 * mm, 26 * mm, 22 * mm, 34 * mm, 34 * mm, 34 * mm],

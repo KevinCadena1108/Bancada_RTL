@@ -26,6 +26,10 @@ Conwaylife com uma FSM e não vê FSMs escritas com `if`). A validação foi fei
 isso o `resultado.md` ainda tem a coluna FSM. No TCC, a comparação vale para aprovação, linha,
 desvio, alternância e mutantes.
 
+**No TCC (Tabela 2):** a coluna de cobertura é a soma dos pontos de linha, desvio e alternância de
+cada caso. Por exemplo, 16/19 no detector de "11" é 4/5 + 6/8 + 6/6. Os mutantes são os mesmos
+de `resultado.md`, e a coluna FSM não aparece.
+
 ## Os 5 casos
 
 | Caso (`pares/`) | Circuito | Por que está aqui |

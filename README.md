@@ -17,10 +17,16 @@ testbenches, e todos foram avaliados nesta bancada.
 
 | | |
 |---|---|
-| **Módulos** | Fsm serialdp, Exams/2012 q2fsm, Count clock, Cs450/gshare, Lemmings1, wbuart32, CORDIC, Conwaylife, Fancytimer e SPI Master |
+| **Módulos** | Lemmings1, Conwaylife, Count clock, Exams/2012 q2fsm, Cs450/gshare, Fancytimer e Fsm serialdp, do HDLBits, e CORDIC, SPI Master e wbuart32, do OpenCores. São 10 módulos sequenciais em Verilog, 6 deles com máquina de estados. |
 | **Estratégias** | Zero-shot, Few-shot, Especialista Zero-shot, Especialista Few-shot, Planning Zero-shot e Planning Few-shot |
 | **LLMs** | GPT-5.6 Luna e Gemini 3.5 Flash-Lite |
 | **Total** | 10 módulos × 6 estratégias × 2 LLMs × 2 rodadas = 240 testbenches |
+
+As gerações foram feitas na interface web de cada LLM, que não deixa ajustar a temperatura. Por
+isso cada combinação foi gerada duas vezes. Cada geração foi feita num chat novo, em guia anônima,
+e valeu o primeiro testbench gerado. Todos os prompts pediram os mesmos requisitos mínimos (ver
+[Formato do testbench](#formato-do-testbench)). Os prompts completos estão em
+[`documentacao/apendice_prompts.tex`](documentacao/apendice_prompts.tex).
 
 A análise é descritiva. Ela usa quatro medidas.
 
@@ -34,7 +40,8 @@ A análise é descritiva. Ela usa quatro medidas.
 
 Principais resultados:
 
-- 175 dos 240 testbenches passaram (72,9%).
+- 175 dos 240 testbenches passaram (72,9%). O Gemini teve mais aprovados (95 contra 80), mas o GPT
+  teve score efetivo maior (57,9% contra 50,2%).
 - O score efetivo geral foi 54,1% (519 de 960 falhas). O maior foi o da Planning Few-shot (66,9%) e
   o menor, o da Zero-shot (38,1%).
 - As estratégias com exemplos (Few-shot) detectaram 61,0% das falhas. As sem exemplos detectaram
@@ -42,6 +49,8 @@ Principais resultados:
 - No posto médio com os dois LLMs juntos, a ordem foi Planning Few-shot (4,30), Especialista
   Few-shot (3,75), Few-shot (3,675), Planning Zero-shot (3,625), Especialista Zero-shot (3,30) e
   Zero-shot (2,35).
+- Entre os aprovados, a cobertura média variou menos de 5 pontos entre as estratégias, e o score
+  dos aprovados variou de 69,3% a 78,7%. A detecção de falhas variou mais que a cobertura.
 - Dos 122 testbenches com 100% de cobertura de linha, 63 deixaram alguma falha sem detectar
   (51,6%). A cobertura sozinha não basta para avaliar um testbench.
 
@@ -76,6 +85,15 @@ Flask. Nas próximas, basta rodar `./start.sh`.
 O módulo do testbench precisa se chamar `tb` e terminar com `$finish`. Quando uma checagem falhar,
 use `$fatal(1, ...)`. Isso faz o código de saída ficar diferente de 0. É assim que a bancada sabe
 que o testbench reprovou, e é assim que o teste de mutação sabe que um mutante foi detectado.
+
+No TCC, todos os prompts pediram os mesmos requisitos, sem dizer como testar o módulo.
+
+- O módulo do testbench deve se chamar `tb`.
+- Ele instancia o módulo sob teste e compara as saídas com os valores esperados usando `!==`.
+- Em caso de erro, usa `$fatal(1, ...)`.
+- Cada `$display` tem a string numa linha só, porque o Verilog não junta strings quebradas.
+- Termina com `$finish`.
+- Compila no Verilator, sem arquivos externos.
 
 ```verilog
 module tb;
@@ -153,7 +171,9 @@ ICV = P_LOC·0,30 + P_FSM·0,30 + P_IO·0,20 + P_LOG·0,20      (0 a 3)
 
 Classes: Fácil até 1,2 · Média até 1,9 · Alta até 2,3 · Muito Alta acima de 2,3. As faixas foram
 calibradas para os módulos do estudo (HDLBits e cores abertos pequenos). A extração é feita por
-heurística de texto, sem parser. No TCC, o ICV serve para mostrar que os 10 módulos são variados.
+heurística de texto, sem parser. Os pesos e os limites foram definidos pelo autor, sem um estudo de
+validação. Por isso, no TCC, o ICV serve só para mostrar que os 10 módulos são variados. Eles
+ficaram com ICV entre 1,0 e 2,5, sendo 3 fáceis, 4 médios, 1 alto e 2 muito altos.
 
 ## Teste de mutação
 
@@ -165,6 +185,8 @@ heurística de texto, sem parser. No TCC, o ICV serve para mostrar que os 10 mó
 - **Espalhamento.** Os pontos mutáveis são divididos em 4 faixas do arquivo. A bancada pega um de
   cada faixa por vez e varia o operador dentro da faixa. Assim os 4 mutantes não caem no mesmo
   bloco.
+- **Escolha determinística.** Os mutantes dependem só do módulo. Então todos os testbenches de um
+  mesmo módulo enfrentam os mesmos 4 mutantes, em qualquer estratégia, LLM ou rodada.
 - **Mutante que trava** a simulação estoura o `SIM_TIMEOUT` e conta como detectado.
 - **Trava de segurança.** A mutação só roda se o testbench **compilou, executou e passou** no RTL
   original. Senão, todo mutante seria "detectado" de graça e o score seria falso.

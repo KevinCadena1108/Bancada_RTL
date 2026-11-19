@@ -1,8 +1,9 @@
 """Gera o apêndice do TCC em LaTeX com os dados completos do experimento.
 
-Organizado como a planilha: (1) uma tabela com o cálculo do ICV de cada módulo; (2) uma tabela por
-módulo, com um bloco por IA (GPT e Gemini) e, em cada bloco, as linhas Linha, Desvio, Alternância
-e Mutantes, com a rodada 1 ao lado da rodada 2 (6 estratégias em cada).
+Igual ao Apêndice B do TCC (PDF de 19/11/2026): (1) a tabela dos módulos utilizados (origem e
+função); (2) o cálculo do ICV de cada módulo; (3) uma tabela por módulo, com um bloco por IA (GPT
+e Gemini) e, em cada bloco, as linhas Linha, Desvio, Alternância e Mutantes, com a rodada 1 ao
+lado da rodada 2 (6 estratégias em cada).
 A cobertura de FSM saiu do trabalho em 2026-11-13: a aproximação por `case` da Bancada pegava o
 Conwaylife (case sobre a soma de vizinhos, não é FSM) e não via as FSMs com `if` (Fancytimer,
 wbuart32). O P_FSM do ICV usa outra detecção e continua valendo.
@@ -41,6 +42,19 @@ ICV = {
 ICV_BANCADA = {"Lemmings1": 1.0, "Conwaylife": 1.0, "Cout Clock": 1.0, "Exams/2012 q2fsm": 1.4,
                "Cs450/gshare": 1.8, "fancytimer": 1.9, "Cordic": 1.9, "Fsm serialdp": 2.2,
                "I2C Slave": 2.4, "wbuart32": 2.5}
+# Função de cada módulo, como na Tabela "Módulos utilizados" do TCC (19/11/2026).
+FUNCAO = {
+    "Lemmings1": "controle de direção de personagem",
+    "Conwaylife": "Jogo da Vida em grade 16$\\times$16",
+    "Cout Clock": "relógio de 12 horas",
+    "Exams/2012 q2fsm": "máquina de estados",
+    "Cs450/gshare": "preditor de desvios",
+    "fancytimer": "temporizador acionado por sequência",
+    "Cordic": "cálculo trigonométrico em \\textit{pipeline}",
+    "Fsm serialdp": "receptor serial com paridade",
+    "I2C Slave": "mestre de comunicação SPI",
+    "wbuart32": "transmissor UART",
+}
 ORDEM = list(ICV)
 EST = ["ZS", "FS", "EspZS", "EspFS", "PlnZS", "PlnFS"]
 METS = [("linha", "Linha"), ("branch", "Desvio"), ("toggle", "Alternância")]
@@ -98,15 +112,36 @@ w("")
 w("\\section{Resultados detalhados}")
 w("\\label{ap:resultados}")
 w("")
-w("Este apêndice reúne os dados completos do experimento. A Tabela~\\ref{tab:ap_icv} mostra o "
-  "cálculo do ICV de cada módulo, e as Tabelas~\\ref{" + rotulo(ORDEM[0]) + "} a~\\ref{"
-  + rotulo(ORDEM[-1]) + "} trazem, para cada módulo e cada LLM, as coberturas (\\%) e os "
-  "mutantes mortos de cada estratégia nas duas rodadas. Abreviações: ZS = \\textit{Zero-shot}; "
-  "FS = \\textit{Few-shot}; Esp = Especialista; Pln = \\textit{Planning}; $k$/4 = mutantes "
-  "mortos de 4; NP = não passou no circuito original; TO = excedeu o tempo limite. "
-  "As coberturas dos \\textit{testbenches} "
+w("Este apêndice reúne os módulos utilizados e os dados completos do experimento. A "
+  "Tabela~\\ref{tab:modulos} apresenta a origem e a função de cada módulo, e a "
+  "Tabela~\\ref{tab:ap_icv} mostra o cálculo do ICV. Em seguida, as Tabelas~\\ref{"
+  + rotulo(ORDEM[0]) + "} a~\\ref{" + rotulo(ORDEM[-1]) + "} trazem, para cada módulo e cada "
+  "LLM, as coberturas (\\%) e os mutantes detectados por cada estratégia nas duas rodadas. "
+  "Nessas tabelas, ZS indica \\textit{Zero-shot}, FS indica \\textit{Few-shot}, Esp indica "
+  "Especialista e Pln indica \\textit{Planning}. Nos mutantes, $k$/4 indica quantos dos 4 "
+  "mutantes foram detectados, NP indica que o \\textit{testbench} não passou no circuito "
+  "original e TO indica que ele excedeu o tempo limite. As coberturas dos \\textit{testbenches} "
   "não aprovados estão registradas, mas não entram nas médias do trabalho, pois a simulação é "
-  "interrompida no primeiro erro.")
+  "interrompida no primeiro erro. Por isso, um \\textit{testbench} reprovado pode apresentar "
+  "cobertura alta, inclusive de 100\\%, quando exercita todo o circuito e falha em uma "
+  "verificação próxima ao final da simulação.")
+w("")
+
+# ---- módulos utilizados ----
+w("\\begin{table}[htbp]")
+w("  \\centering")
+w("  \\caption{Módulos utilizados}")
+w("  \\label{tab:modulos}")
+w("  \\footnotesize")
+w("  \\begin{tabular}{@{}lll@{}}")
+w("    \\toprule")
+w("    Módulo & Origem & Função \\\\")
+w("    \\midrule")
+for c in ORDEM:
+    w(f"    {ICV[c][0]} & {ICV[c][1]} & {FUNCAO[c]} \\\\")
+w("    \\bottomrule")
+w("  \\end{tabular}")
+w("\\end{table}")
 w("")
 
 # ---- cálculo do ICV ----
@@ -131,8 +166,9 @@ w("    \\bottomrule")
 w("  \\end{tabular}")
 w("")
 w("  \\smallskip")
-w("  {\\footnotesize Entre parênteses, a pontuação de cada componente. Lógica: A = aritmética, "
-  "D = deslocamento, P = estruturas replicadas. "
+w("  {\\footnotesize Entre parênteses, a pontuação de cada componente. Estados: número de estados "
+  "identificado pela Bancada RTL; -- indica módulo sem máquina de estados. Lógica: A = "
+  "aritmética, D = deslocamento, P = estruturas replicadas. "
   "$\\mathrm{ICV} = 0{,}30P_{\\mathrm{LOC}} + 0{,}30P_{\\mathrm{FSM}} + 0{,}20P_{\\mathrm{IO}} + "
   "0{,}20P_{\\mathrm{LOG}}$.}")
 w("\\end{table}")

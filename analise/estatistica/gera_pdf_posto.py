@@ -210,7 +210,7 @@ pm_gem = tabela_modelo("3.2 Gemini 3.5 Flash-Lite", GEM, colors.HexColor("#5b3a8
 
 # ---------- juntos ----------
 st(PageBreak())
-st(P("4. Resultado com os dois modelos juntos (20 circuitos)", H1))
+st(P("4. Resultado com os dois modelos juntos (20 blocos)", H1))
 st(P("Ao juntar os modelos, cada combinação circuito × modelo vira um bloco (20 no total). As "
      "estratégias são ranqueadas <b>dentro</b> de cada bloco, do mesmo modo; o posto médio é a média "
      "sobre os 20. O modelo nunca é ranqueado — ele apenas dobra o número de blocos."))
