@@ -11,7 +11,8 @@ Recebe um modulo RTL e um testbench (ambos Verilog), roda o Verilator e devolve:
 Todo o conhecimento acumulado esta aqui:
   * build em /tmp (nunca em caminho com espaco)  -> --Mdir
   * harness C++ proprio para gravar cobertura    -> sim/main.cpp
-  * --annotate-min 1 (default 10 daria 0%)
+  * coverage.dat lido direto, coberto = contador >= 1 (equivale ao
+    --annotate-min 1; o default 10 do verilator_coverage daria 0%)
   * modulo do testbench se chama sempre "tb"
 """
 
@@ -348,8 +349,9 @@ def cobertura_fsm(rtl_texto, covfile):
     """
     Cobertura de maquina de estados (o Verilator nao emite esse tipo).
     Aproximacao: acha no RTL um case cujo seletor e' um registrador (sinal
-    atualizado com <=, o padrao de FSM) e mede a cobertura dos pontos de
-    branch dentro desse case. Sem FSM detectavel -> None ("sem cobertura").
+    atualizado com <=, o padrao de FSM) e mede a cobertura dos pontos v_line
+    com o=case dentro desse case (um ponto por braco, inclusive o default).
+    Sem FSM detectavel -> None ("sem cobertura").
     """
     # 1) intervalos de linha dos case de estado no RTL
     intervalos = []
@@ -1026,5 +1028,7 @@ def historico():
 
 
 if __name__ == "__main__":
-    # host 0.0.0.0 para funcionar tambem via WSL
+    # So 127.0.0.1: a bancada executa qualquer Verilog recebido e roda com
+    # debug=True, entao nao deve ficar aberta para a rede. O Windows acessa
+    # o WSL por localhost mesmo assim.
     app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)

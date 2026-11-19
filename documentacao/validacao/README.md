@@ -67,3 +67,6 @@ No WSL, na raiz do repositório, com o venv da bancada (tem o `flask`):
 
 Imprime bancada × manual de cada caso, regrava `resultado.md` e sai com erro se algo não bater.
 Para refazer um caso à mão, siga os comandos dos documentos acima.
+
+Em 19/11/2026 o script foi rodado de novo numa cópia limpa do repositório. Os 5 casos deram iguais,
+e o `resultado.md` só mudou na data.

@@ -45,20 +45,30 @@ aqui. A versão em Word da comparação está em `validacao/comparacao_api_manua
 
 ## Como gerar de novo
 
-No WSL (as fontes DejaVu vêm do Ubuntu), na raiz do repositório:
+Rode no WSL, na raiz do repositório. As fontes DejaVu vêm do Ubuntu. O venv fica na pasta pessoal,
+e não no `/tmp`, porque o WSL apaga o `/tmp` quando desliga.
 
 ```bash
-python3 -m venv /tmp/docs && /tmp/docs/bin/pip install reportlab pypdfium2
-/tmp/docs/bin/python analise/estatistica/gerar_pdf_resultados.py
-/tmp/docs/bin/python analise/estatistica/gera_pdf_posto.py
-/tmp/docs/bin/python analise/estatistica/gerar_apendice_latex.py
-/tmp/docs/bin/python analise/documentos/gerar_pdfs_drive.py
-/tmp/docs/bin/python analise/figuras/figura_processo.py
+python3 -m venv ~/venv-docs && ~/venv-docs/bin/pip install reportlab pypdfium2
+~/venv-docs/bin/python analise/estatistica/gerar_pdf_resultados.py
+~/venv-docs/bin/python analise/estatistica/gera_pdf_posto.py
+~/venv-docs/bin/python analise/estatistica/gerar_apendice_latex.py
+~/venv-docs/bin/python analise/documentos/gerar_pdfs_drive.py
+~/venv-docs/bin/python analise/figuras/figura_processo.py
 ```
 
-Sem argumento, cada script grava no lugar indicado na tabela. O PNG da figura é feito a partir do
-PDF com o `pypdfium2` (escala 300/72, ou seja, 300 dpi). Os scripts conferem os números do TCC com
-`assert` e param se a planilha mudar.
+O PNG da figura é feito a partir do PDF, a 300 dpi:
+
+```bash
+~/venv-docs/bin/python -c "import pypdfium2 as p; p.PdfDocument('documentacao/figuras/processo_trabalho.pdf')[0].render(scale=300/72).to_pil().save('documentacao/figuras/processo_trabalho.png')"
+```
+
+Sem argumento, cada script grava no lugar indicado na tabela. Os geradores dos resultados e do
+apêndice conferem os números do TCC com `assert` e param se a planilha mudar. O do posto médio
+imprime os postos no terminal para conferir.
+
+Em 19/11/2026 os cinco geradores e o comando do PNG foram rodados numa cópia limpa do repositório,
+com `reportlab` 5.1.0. Os PDFs, o apêndice e o PNG saíram com o mesmo conteúdo dos arquivos do git.
 
 ## O que saiu (18/11/2026)
 
