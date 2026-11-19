@@ -5,6 +5,11 @@ recebe: se compilou, se executou, se passou, cobertura de código, mutation scor
 e o **ICV** (índice de complexidade do módulo). Funciona para qualquer módulo e
 qualquer testbench, desde que o módulo do testbench se chame `tb`.
 
+Foi feita para o TCC "Avaliação de estratégias de engenharia de prompt na geração de
+testbenches para verificação de módulos RTL", que compara 6 estratégias de prompt em
+10 módulos com 2 LLMs (240 testbenches). O material do TCC está em
+[`documentacao/`](documentacao/README.md).
+
 ## Rodar
 
 No **WSL/Linux**, nunca em `/mnt/c` (o Verilator não compila lá):
@@ -59,9 +64,10 @@ O núcleo carrega as correções descobertas na prática:
 - **Estado**: compilou / executou / passou (três indicadores). `passou` reflete o
   código de saída da simulação (exit 0 = passou).
 - **Cobertura**: % e pontos cobertos/total, quebrado por tipo — **linha**,
-  **desvio (branch)**, **alternância (toggle)** e **máquina de estados (FSM)**.
-  Só conta pontos do `dut.v` (ignora o testbench). A cobertura de FSM é uma
-  aproximação (o Verilator não emite esse tipo — ver Limitações).
+  **desvio (branch)** e **alternância (toggle)**. Só conta pontos do `dut.v`
+  (ignora o testbench). A API também calcula uma cobertura de **máquina de estados
+  (FSM)** aproximada (campo `fsm` do JSON e coluna no histórico), mas ela saiu do
+  TCC e não aparece na tela (ver Limitações).
 - **Mutation score**: % de mutantes mortos (defeitos detectados pelo testbench).
 - **Mutantes avaliados**: um cartão por mutante mostrando o operador trocado, a
   linha, o **diff** (antes/depois) e o veredito — **detectado** (verde, o
@@ -90,7 +96,7 @@ abertos pequenos); a extração é por heurística de texto, sem parser.
 
 ## Detalhes da mutação
 
-- **Mutação de primeira ordem por regex.** ~20 operadores (`+`↔`-`, `==`↔`!=`,
+- **Mutação de primeira ordem por regex.** 20 operadores (`+`↔`-`, `==`↔`!=`,
   `&`↔`|`, `<<`↔`>>`, troca de constantes, ramos de `?:`, `if(x)`↔`if(!x)`…), só
   aplicados **dentro da lógica** (corpo de `always`/`assign`).
 - **Até 4 mutantes válidos por rodada** (`MAX_MUTANTES = 4`), com teto de 16
@@ -152,17 +158,20 @@ matá-los. Para o TCC isso é suficiente para comparar estratégias de prompt en
 si (todas enfrentam o mesmo gerador). Mutação rigorosa e reproduzível (ex.:
 baseada em Yosys/AST) seria o próximo passo — outro escopo.
 
-**Cobertura de FSM aproximada.** O Verilator não emite cobertura de FSM; a
-bancada aproxima procurando um `case` cujo seletor é um registrador (padrão de
-FSM) e medindo a cobertura dos braços desse case.
+**Cobertura de FSM aproximada (fora do TCC).** O Verilator não emite cobertura de
+FSM; a bancada aproxima procurando um `case` cujo seletor é um registrador (padrão
+de FSM) e medindo a cobertura dos braços desse case. A heurística confunde `case`
+que não é FSM (Conwaylife) e não vê FSMs escritas com `if` (Fancytimer, wbuart32),
+por isso a métrica saiu do TCC e da tela. O `P_FSM` do ICV usa outra detecção e
+continua valendo.
 
 **ICV é heurístico.** Sem parser, P_FSM e P_LOG são estimativas de texto — por
 isso a tela mostra os 4 componentes brutos, para auditoria.
 
-**Um módulo por vez.** A página avalia um par RTL+TB. Para rodar os 8–10 módulos
-× 6 estratégias (fatorial 2×3) em lote, o mesmo `app.py` pode virar um script de linha de comando
+**Um módulo por vez.** A página avalia um par RTL+TB. Para rodar os 10 módulos
+× 6 estratégias em lote, o mesmo `app.py` pode virar um script de linha de comando
 — as funções `compilar_e_cobrir`, `testar_mutacao` e `calcular_icv` já são
-independentes do Flask.
+independentes do Flask (é o que `analise/validacao/validar_bancada.py` faz).
 
 ## Estrutura
 
@@ -172,8 +181,19 @@ veriweb/
 ├── sim/main.cpp          harness C++ (loop de tempo + grava cobertura)
 ├── templates/index.html  a página
 ├── requirements.txt
-└── start.sh              sobe o servidor
+├── start.sh              sobe o servidor
+├── planilha/doPost.gs    cópia do Apps Script que grava na planilha do experimento
+├── exemplos/             pares RTL + testbench para testar a bancada (ver o README da pasta)
+├── analise/              scripts que geram os PDFs, a figura e o apêndice do TCC
+│   ├── estatistica/      dados da planilha (pdf_comum.py, coberturas.json) e geradores
+│   ├── documentos/       gerador dos PDFs da pasta "Documentação" do Google Drive
+│   ├── figuras/          gerador da figura do processo do trabalho
+│   └── validacao/        validar_bancada.py: bancada × Verilator à mão
+└── documentacao/         apêndices LaTeX, figura, PDFs e validação (ver o README da pasta)
 ```
+
+Ficam fora do git (só no WSL): `webhook.env`, `historico.csv`, `avaliacoes/` e
+`envios_pendentes.jsonl`.
 
 ## Testbench: formato esperado
 

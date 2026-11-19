@@ -1,5 +1,8 @@
-"""Partes comuns dos PDFs de estatistica: dados da planilha, calculos basicos, estilos e referencias."""
-import math
+"""Partes comuns dos PDFs da análise: dados da planilha, cálculos básicos e estilos.
+
+Os testes estatísticos (Friedman, Wilcoxon, Holm, Nemenyi) saíram em 2026-11-18, junto com os PDFs
+que os usavam: o TCC usa só análise descritiva. Estão no histórico do git (commit e89bd43).
+"""
 import os
 import re
 import sys
@@ -12,7 +15,6 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Table, TableStyle
-from scipy.stats import PermutationMethod, wilcoxon
 
 # --------------------------------------------------------------------------
 # Dados: linha "Mutantes" da planilha, na ordem ZS, FS, EspZS, EspFS, PlnZS, PlnFS.
@@ -83,13 +85,6 @@ PLANILHA_R2 = {
 RODADAS = {1: PLANILHA_R1, 2: PLANILHA_R2}
 MODELOS = list(PLANILHA_R1)
 CURTO = {"GPT-5.6 Luna": "GPT", "Gemini 3.5 Flash-Lite": "Gemini"}
-# Na 2a rodada, 2 celulas foram reavaliadas com um testbench NOVO (os outros reenvios corrigiam um
-# TB colado na estrategia errada) e a planilha ficou com o 2o resultado. Aqui fica o 1o, para a
-# verificacao de robustez: (modelo, circuito, estrategia) -> celula do 1o envio.
-PRIMEIRO_ENVIO_R2 = {
-    ("GPT-5.6 Luna", 1, 4): NP,                 # Exams/2012 q2fsm2, Planning Zero-shot (depois 4/4)
-    ("Gemini 3.5 Flash-Lite", 7, 5): "0/4",     # Conwaylife2_gemini, Planning Few-shot (depois 4/4)
-}
 
 
 def converter(celula):
@@ -103,54 +98,17 @@ def abrev(celula):
     return {NP: "NP", "Timeout": "TO"}.get(celula, celula)
 
 
-def celulas(modelo, rodada, primeiro_envio=False):
-    tab = [list(linha) for linha in RODADAS[rodada][modelo]]
-    if rodada == 2 and primeiro_envio:
-        for (m, i, j), cel in PRIMEIRO_ENVIO_R2.items():
-            if m == modelo:
-                tab[i][j] = cel
-    return tab
+def celulas(modelo, rodada):
+    return [list(linha) for linha in RODADAS[rodada][modelo]]
 
 
-def valores(modelo, rodada=None, primeiro_envio=False):
+def valores(modelo, rodada=None):
     """Mutantes mortos por circuito × estratégia. Com rodada = 1 ou 2, os inteiros daquela rodada;
     sem rodada, a média das duas (0; 0,5; ...; 4), que é o valor analisado."""
     if rodada is not None:
-        return [[converter(c) for c in linha] for linha in celulas(modelo, rodada, primeiro_envio)]
-    r1, r2 = valores(modelo, 1), valores(modelo, 2, primeiro_envio)
+        return [[converter(c) for c in linha] for linha in celulas(modelo, rodada)]
+    r1, r2 = valores(modelo, 1), valores(modelo, 2)
     return [[(a + b) / 2 for a, b in zip(l1, l2)] for l1, l2 in zip(r1, r2)]
-
-
-def wilc(x, y):
-    """Wilcoxon pareado bicaudal exato de y − x (zeros descartados, postos médios).
-    Retorna (ganha, perde, empata, T, p)."""
-    d = [b - a for a, b in zip(x, y)]
-    nz = [i for i, v in enumerate(d) if v != 0]
-    ganha, perde = sum(v > 0 for v in d), sum(v < 0 for v in d)
-    if not nz:
-        return ganha, perde, len(d), 0.0, 1.0
-    r = wilcoxon([y[i] for i in nz], [x[i] for i in nz], zero_method="wilcox",
-                 method=PermutationMethod(n_resamples=max(10 ** 6, 2 ** len(nz))))
-    return ganha, perde, len(d) - len(nz), float(r.statistic), float(r.pvalue)
-
-
-def holm(ps):
-    """p-valores ajustados por Holm (1979): o i-ésimo menor × (m − i + 1), sem deixar cair, até 1."""
-    ordem = sorted(range(len(ps)), key=lambda i: ps[i])
-    adj, acc = [0.0] * len(ps), 0.0
-    for pos, i in enumerate(ordem):
-        acc = max(acc, min(1.0, (len(ps) - pos) * ps[i]))
-        adj[i] = acc
-    return adj
-
-
-Q_NEMENYI_6 = 2.850     # q de Nemenyi para k = 6 e alfa = 0,05 (Demšar 2006, tabela 5a)
-
-
-def nemenyi_cd(k, n):
-    """Diferença crítica de postos médios do pós-teste de Nemenyi (Demšar 2006)."""
-    assert k == 6
-    return Q_NEMENYI_6 * math.sqrt(k * (k + 1) / (6 * n))
 
 
 def postos(vals):
@@ -266,51 +224,6 @@ def tabela(cab, linhas, larguras, destacar_ultima=False, primeira_esq=True, cor_
         est.append(("BACKGROUND", (0, -1), (-1, -1), cor_ultima))
     t.setStyle(TableStyle(est))
     return t
-
-
-# --------------------------------------------------------------------------
-# Referencias (ABNT)
-# --------------------------------------------------------------------------
-REFS = {
-    "ARCURI": "ARCURI, Andrea; BRIAND, Lionel. A practical guide for using statistical tests to "
-              "assess randomized algorithms in software engineering. In: INTERNATIONAL CONFERENCE "
-              "ON SOFTWARE ENGINEERING, 33., 2011, Honolulu. <b>Proceedings</b> [...]. New York: "
-              "ACM, 2011. p. 1-10. DOI: 10.1145/1985793.1985795.",
-    "WASSERSTEIN": "WASSERSTEIN, Ronald L.; LAZAR, Nicole A. The ASA's statement on p-values: "
-                   "context, process, and purpose. <b>The American Statistician</b>, v. 70, n. 2, "
-                   "p. 129-133, 2016. DOI: 10.1080/00031305.2016.1154108.",
-    "DEMSAR": "DEMŠAR, Janez. Statistical comparisons of classifiers over multiple data sets. "
-              "<b>Journal of Machine Learning Research</b>, v. 7, p. 1-30, 2006.",
-    "FISHER": "FISHER, Ronald A. <b>Statistical methods for research workers</b>. 4. ed. "
-              "Edinburgh: Oliver and Boyd, 1932.",
-    "FRIEDMAN": "FRIEDMAN, Milton. The use of ranks to avoid the assumption of normality implicit "
-                "in the analysis of variance. <b>Journal of the American Statistical "
-                "Association</b>, v. 32, n. 200, p. 675-701, 1937. "
-                "DOI: 10.1080/01621459.1937.10503522.",
-    "HOLLANDER": "HOLLANDER, Myles; WOLFE, Douglas A.; CHICKEN, Eric. <b>Nonparametric "
-                 "statistical methods</b>. 3. ed. Hoboken: Wiley, 2014.",
-    "HOLM": "HOLM, Sture. A simple sequentially rejective multiple test procedure. "
-            "<b>Scandinavian Journal of Statistics</b>, v. 6, n. 2, p. 65-70, 1979.",
-    "MICROSOFT": "MICROSOFT. <b>Funções estatísticas (referência)</b>. Microsoft Suporte, 2026. "
-                 "Disponível em: https://support.microsoft.com/pt-br/Excel/"
-                 "statistical-functions-reference. Acesso em: 23 out. 2026.",
-    "PRATT": "PRATT, John W. Remarks on zeros and ties in the Wilcoxon signed rank procedures. "
-             "<b>Journal of the American Statistical Association</b>, v. 54, n. 287, "
-             "p. 655-667, 1959. DOI: 10.1080/01621459.1959.10501526.",
-    "SIEGEL": "SIEGEL, Sidney; CASTELLAN JR., N. John. <b>Estatística não-paramétrica para "
-              "ciências do comportamento</b>. 2. ed. Porto Alegre: Artmed, 2006.",
-    "VIRTANEN": "VIRTANEN, Pauli et al. SciPy 1.0: fundamental algorithms for scientific "
-                "computing in Python. <b>Nature Methods</b>, v. 17, p. 261-272, 2020. "
-                "DOI: 10.1038/s41592-019-0686-2.",
-    "WILCOXON": "WILCOXON, Frank. Individual comparisons by ranking methods. <b>Biometrics "
-                "Bulletin</b>, v. 1, n. 6, p. 80-83, 1945. DOI: 10.2307/3001968.",
-}
-
-
-def secao_referencias(story, chaves):
-    story.append(P("Referências", "h1"))
-    for k in sorted(chaves):
-        story.append(P(REFS[k], "ref"))
 
 
 DOC = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",

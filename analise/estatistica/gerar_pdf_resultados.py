@@ -36,16 +36,9 @@ MODULOS = {
     "Conwaylife": ("Conwaylife", 1.0), "fancytimer": ("Fancytimer", 1.9),
     "I2C Slave": ("SPI Master", 2.4),
 }
-CLASSES = ["Fácil", "Média", "Alta", "Muito Alta"]
-
-
-def classe(icv):
-    return "Fácil" if icv <= 1.2 else "Média" if icv <= 1.9 else "Alta" if icv <= 2.3 else "Muito Alta"
-
 
 NOME = [MODULOS[c][0] for c in CIRCUITOS]
 ICV = [MODULOS[c][1] for c in CIRCUITOS]
-CL = [classe(v) for v in ICV]
 ORDEM = sorted(range(10), key=lambda d: (ICV[d], NOME[d].lower()))   # módulos do mais simples ao mais complexo
 D = {c: i for i, c in enumerate(CIRCUITOS)}
 
@@ -194,7 +187,6 @@ st(P("Cada resultado da seção Resultados do TCC, com o cálculo passo a passo 
 # ---- Visão geral
 st(P("Visão geral", "h1"))
 ef_e = [ef(sel(e=e)) for e in range(6)]
-cl_ef = {c: ef(sel(d=[d for d in range(10) if CL[d] == c])) for c in CLASSES}
 lin_cheio = cheio("linha")
 tab("Tabela 1. O que cada resultado responde",
     ["Resultado", "Pergunta que responde", "Principal número"],
@@ -206,8 +198,6 @@ tab("Tabela 1. O que cada resultado responde",
       f"{pct(ef(sel(e=COM)))} contra {pct(ef(sel(e=SEM)))}"],
      ["Posto médio", "Qual estratégia fica à frente dentro de cada módulo?",
       f"PlnFS {npos(PM['J'][5])} (melhor) e ZS {npos(PM['J'][0])} (pior)"],
-     ["Classes do ICV", "A complexidade do módulo muda o resultado?",
-      f"A classe Média foi a pior ({pct(cl_ef['Média'])})"],
      ["Cobertura dos aprovados", "Quanto do circuito os <i>testbenches</i> exercitam?",
       "Linha e desvio acima de 89%, alternância entre 71% e 75%"],
      ["100% de cobertura com mutante vivo", "Cobertura completa garante detectar as falhas?",
@@ -304,24 +294,28 @@ st(P("<b>Como se calcula.</b> As estratégias foram separadas em dois grupos. Co
      "<i>Few-shot</i>, a Especialista <i>Few-shot</i> e a <i>Planning Few-shot</i>. Sem exemplos ficam "
      "as três versões <i>Zero-shot</i>. O <i>score</i> efetivo de cada grupo junta os mutantes "
      "detectados pelas três estratégias. Como todas têm o mesmo número de <i>testbenches</i>, isso "
-     "é igual à média dos três <i>scores</i>. Depois, o mesmo cálculo foi repetido para cada LLM e "
-     "para cada rodada."))
+     "é igual à média dos três <i>scores</i>. Depois, o mesmo cálculo foi repetido para cada LLM."))
 st(P(f"<b>Exemplo.</b> Com os dois LLMs juntos, o grupo com exemplos teve "
      f"({n(ef_e[1], 3)} + {n(ef_e[3], 3)} + {n(ef_e[5], 3)}) ÷ 3 = {pct(ef(sel(e=COM)))}."))
-lin = []
-for rot, kw in [("Os dois LLMs juntos", {}), ("GPT", {"m": G}), ("Gemini", {"m": GM}),
-                ("GPT, rodada 1", {"m": G, "r": 1}), ("GPT, rodada 2", {"m": G, "r": 2}),
-                ("Gemini, rodada 1", {"m": GM, "r": 1}), ("Gemini, rodada 2", {"m": GM, "r": 2})]:
+lin, fam = [], {}
+for rot, kw in [("Os dois LLMs juntos", {}), ("GPT", {"m": G}), ("Gemini", {"m": GM})]:
     c, s = ef(sel(e=COM, **kw)), ef(sel(e=SEM, **kw))
+    fam[rot] = (c, s)
     lin.append([rot, pct(c), pct(s), dif(c - s)])
+assert [pct(x) for x in fam["Os dois LLMs juntos"]] == ["61,0%", "47,1%"]
 tab("Tabela 5. Score efetivo com e sem exemplos",
     ["Recorte", "Com exemplos", "Sem exemplos", "Diferença (pontos)"], lin,
-    [62 * mm, 37 * mm, 37 * mm, 38 * mm])
+    [62 * mm, 37 * mm, 37 * mm, 38 * mm],
+    nota="A diferença é calculada com os valores sem arredondar. Por isso, com os dois LLMs juntos, "
+         "ela aparece como 14,0, embora 61,0 − 47,1 = 13,9. No TCC aparecem só os dois "
+         "<i>scores</i>.")
 representa([
     "Com os dois LLMs juntos, os exemplos ajudaram, e esse é o principal resultado do trabalho.",
-    "A vantagem, porém, só se repetiu em todos os recortes no Gemini. No GPT, ela apareceu na "
-    "rodada 1 e se inverteu na rodada 2. Por isso o texto diz que os resultados <i>indicam</i> uma "
-    "vantagem, e não que ela foi provada."])
+    f"A vantagem apareceu nos dois LLMs e foi maior no Gemini, em que o grupo sem exemplos teve o "
+    f"<i>score</i> mais baixo ({pct(fam['Gemini'][1])}). No GPT, a diferença foi menor "
+    f"({pct(fam['GPT'][0])} contra {pct(fam['GPT'][1])}).",
+    "Os resultados são descritivos. Eles mostram o que aconteceu neste experimento, sem um teste "
+    "estatístico que prove a diferença."])
 
 # ---- 5. Posto médio
 st(P("5. Posto médio", "h1"))
@@ -371,52 +365,8 @@ representa([
     "Ele mostra a ordem, mas não o tamanho da diferença em mutantes. Por isso ele é usado junto "
     "com o <i>score</i> efetivo."])
 
-# ---- 6. Classes do ICV
-st(P("6. Resultados por classe de complexidade (ICV)", "h1"))
-st(P("<b>Como se calcula.</b> Cada módulo recebeu um ICV, calculado pela Bancada RTL a partir do "
-     "código. Pelo valor, ele entra em uma classe. Fácil vai até 1,2, Média até 1,9, Alta até 2,3 "
-     "e Muito Alta fica acima disso. Em cada classe, juntam-se os <i>testbenches</i> dos módulos "
-     "dela e calculam-se a taxa de aprovação, o <i>score</i> efetivo e o posto médio, com os dois "
-     "LLMs juntos. No posto médio, entram só as classificações dos módulos da classe, duas por "
-     "módulo."))
-lin = []
-for d in ORDEM:
-    l = sel(d=d)
-    lin.append([NOME[d], n(ICV[d], 1), CL[d], f"{apr(l)}/24", pct(ef(l)),
-                pct(ef(sel(G, d=d))), pct(ef(sel(GM, d=d))),
-                f"{max(t['k'] for t in l)}/4"])
-tab("Tabela 10. Resultados por módulo",
-    ["Módulo", "ICV", "Classe", "Aprovados", "<i>Score</i> efetivo", "<i>Score</i> GPT",
-     "<i>Score</i> Gemini", "Máximo detectado"],
-    lin, [32 * mm, 13 * mm, 21 * mm, 21 * mm, 23 * mm, 20 * mm, 20 * mm, 24 * mm],
-    nota="Máximo detectado é o maior número de mutantes que algum <i>testbench</i> do módulo "
-         "detectou.")
-lin, linp = [], []
-for c in CLASSES:
-    dd = [d for d in range(10) if CL[d] == c]
-    l = sel(d=dd)
-    pm, nc = posto_medio(MODELOS, dd)
-    lin.append([c, ", ".join(NOME[d] for d in ORDEM if d in dd), f"{apr(l)}/{len(l)} "
-                f"({pct(Fraction(100 * apr(l), len(l)), 0)})", pct(ef(l)), str(nc)])
-    linp.append([c] + [npos(x) for x in pm])
-tab("Tabela 11. Resumo por classe",
-    ["Classe", "Módulos", "Aprovação", "<i>Score</i> efetivo", "Classificações"], lin,
-    [24 * mm, 66 * mm, 30 * mm, 28 * mm, 26 * mm])
-tab("Tabela 12. Posto médio por classe, com os dois LLMs juntos",
-    ["Classe", "ZS", "FS", "EspZS", "EspFS", "PlnZS", "PlnFS"], linp, W7,
-    nota="Na tabela do TCC aparecem só o maior e o menor de cada linha. " + LEG)
-representa([
-    f"O desempenho não piorou junto com o ICV. A classe Média teve o menor <i>score</i> efetivo "
-    f"({pct(cl_ef['Média'])}), abaixo da Muito Alta ({pct(cl_ef['Muito Alta'])}).",
-    "Isso veio de três módulos da classe Média. No Cs450/gshare, metade dos <i>testbenches</i> foi "
-    "reprovada e nenhum do Gemini detectou mais de um mutante. No CORDIC, um dos mutantes é "
-    "equivalente, ou seja, não muda o circuito e não pode ser detectado. No Fancytimer, 10 dos 24 foram reprovados.",
-    "O ICV mede o tamanho e a estrutura do código. A dificuldade desses módulos está no "
-    "comportamento, como contar o tempo certo ou treinar uma tabela de previsão. A classe Alta tem "
-    "um módulo só, então não permite generalizar."])
-
-# ---- 7. Cobertura dos aprovados
-st(P("7. Cobertura dos <i>testbenches</i> aprovados", "h1"))
+# ---- 6. Cobertura dos aprovados
+st(P("6. Cobertura dos <i>testbenches</i> aprovados", "h1"))
 st(P("A cobertura mede quanto do circuito o <i>testbench</i> exercitou, e o Verilator mede três "
      "tipos."))
 st(item("<b>Linha.</b> Porcentagem das linhas do código que foram executadas pelo menos uma vez."))
@@ -439,7 +389,7 @@ lin = []
 for rot, l in ([(NOME_ESTR[ESTR[e]], sel(e=e, ok=True)) for e in range(6)]
                + [(m, sel(m, ok=True)) for m in MODELOS]):
     lin.append([rot, len(l)] + [pct(cobmed(l, k)) for k in MET] + [pct(ef(l))])
-tab("Tabela 13. Cobertura média e score dos aprovados",
+tab("Tabela 10. Cobertura média e score dos aprovados",
     ["Estratégia ou LLM", "Aprovados", "Linha", "Desvio", "Alternância",
      "<i>Score</i> dos aprovados"],
     lin, [50 * mm, 22 * mm, 24 * mm, 24 * mm, 26 * mm, 28 * mm])
@@ -457,8 +407,8 @@ representa([
     "Cada estratégia teve um número diferente de aprovados, em módulos diferentes. Por isso essas "
     "médias devem ser comparadas com cautela."])
 
-# ---- 8. 100% de cobertura com mutante vivo
-st(P("8. 100% de cobertura com mutante vivo", "h1"))
+# ---- 7. 100% de cobertura com mutante vivo
+st(P("7. 100% de cobertura com mutante vivo", "h1"))
 st(P("<b>Como se calcula.</b> Para cada tipo de cobertura, pegam-se os <i>testbenches</i> aprovados "
      "que chegaram a 100% e conta-se quantos deixaram pelo menos um mutante sem detectar, ou seja, "
      "detectaram menos de 4."))
@@ -474,7 +424,7 @@ for k in MET:
                 f"{vg} de {tg} ({pct(Fraction(100 * vg, tg))})",
                 f"{vm} de {tm} ({pct(Fraction(100 * vm, tm))})",
                 f"{vs} de {ts} ({pct(Fraction(100 * vs, ts), 0)})"])
-tab("Tabela 14. Testbenches aprovados com 100% de cobertura e algum mutante vivo",
+tab("Tabela 11. Testbenches aprovados com 100% de cobertura e algum mutante vivo",
     ["Cobertura", "Vivos de 100%", "Proporção", "GPT", "Gemini", "Sem o CORDIC"], lin,
     [24 * mm, 26 * mm, 22 * mm, 34 * mm, 34 * mm, 34 * mm],
     nota="Um mutante do CORDIC é equivalente e não pode ser detectado, então todo "

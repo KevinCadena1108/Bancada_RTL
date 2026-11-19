@@ -11,15 +11,20 @@ Metodologia do TCC.
 |---|---|
 | `pares/<caso>/dut.v` e `tb.v` | os 5 pares usados (módulo e testbench) |
 | `resultado.md` | tabela gerada pelo script de comparação (bancada × manual) |
-| `prova_cobertura_detector11.pdf` | detector de "11": rota manual passo a passo (comandos, `coverage.dat` cru e comentado) |
-| `prova_fsm_detector101.pdf` | detector de "101": resultado da API ligado ponto a ponto ao `coverage.dat` |
 | `comparacao_api_manual.docx` | somador de 32 bits, temporizador (FSM com `case`) e Fancytimer (FSM com `if`): comandos manuais, saída do terminal e capturas de tela da API |
+| [`../drive/prova_cobertura.pdf`](../drive/prova_cobertura.pdf) | detector de "11": rota manual passo a passo (comandos, `coverage.dat` cru e comentado) |
+| [`../drive/prova_fsm_completo.pdf`](../drive/prova_fsm_completo.pdf) | detector de "101": resultado da API ligado ponto a ponto ao `coverage.dat` |
 
-Os três documentos foram feitos pelo autor em 2026-11-06. Os dois PDFs foram refeitos em
-2026-11-18 por `analise/documentos/gerar_pdfs_drive.py` (são os mesmos `prova_cobertura.pdf` e
-`prova_fsm_completo.pdf` de `documentacao/drive/`): o código agora mostra `<=` e `&&` (antes saía
-`&lt;=` e `&amp;&amp;`), a linha 12 do detector de "11" é o bloco `always` (não o `assign`) e a
-cobertura de FSM saiu. Os números foram conferidos de novo no Verilator 5.032.
+Os documentos foram feitos pelo autor em 2026-11-06. Os dois PDFs foram refeitos em 2026-11-18 por
+`analise/documentos/gerar_pdfs_drive.py` e ficam só em `documentacao/drive/` (antes havia uma cópia
+idêntica aqui): o código agora mostra `<=` e `&&` (antes saía `&lt;=` e `&amp;&amp;`), a linha 12
+do detector de "11" é o bloco `always` (não o `assign`) e a cobertura de FSM saiu. Os números
+foram conferidos de novo no Verilator 5.032.
+
+**Cobertura de FSM:** saiu do TCC em 2026-11-13 (a aproximação da bancada confunde o `case` do
+Conwaylife com uma FSM e não vê FSMs escritas com `if`). A validação foi feita antes disso, por
+isso o `resultado.md` ainda tem a coluna FSM. No TCC, a comparação vale para aprovação, linha,
+desvio, alternância e mutantes.
 
 ## Os 5 casos
 
@@ -49,7 +54,8 @@ Os 5 casos deram **iguais** em tudo (ver `resultado.md`). Destaques:
   0): a bancada marca sobrevivente corretamente;
 - a cobertura de FSM conta também o braço `default` (por isso 3/4 no detector de "11", que visita
   os 3 estados);
-- FSM escrita com `if` não recebe cobertura de FSM (Fancytimer), como diz a Metodologia.
+- FSM escrita com `if` não recebe cobertura de FSM (Fancytimer), um dos motivos para essa métrica
+  ter saído do TCC.
 
 ## Como reproduzir
 

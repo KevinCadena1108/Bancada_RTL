@@ -133,8 +133,8 @@ seta((136.5, 111.5), (136.5, 124.5), (123, 124.5))
 seta((42, 111.5), (42, 124.5), (53, 124.5))
 
 # 4. análise
-caixa(30, 148, 62, 15, ["Análise dos resultados", "taxa de aprovação, score efetivo,", "posto médio, classes de ICV e cobertura"])
-caixa(102, 148, 52, 15, ["Comparação e conclusões", "estratégias de prompt", "e modelos"], fundo=FIM, borda=FIM_BORDA)
+caixa(30, 148, 62, 15, ["Análise dos resultados", "taxa de aprovação, score efetivo,", "posto médio e cobertura"])
+caixa(102, 148, 52, 15, ["Comparação e conclusões", "estratégias de prompt, em cada", "LLM e com os dois juntos"], fundo=FIM, borda=FIM_BORDA)
 seta((61, 130), (61, 148))
 seta((92, 155.5), (102, 155.5))
 
