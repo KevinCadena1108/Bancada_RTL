@@ -1,8 +1,7 @@
 # Módulos RTL do experimento
 
 Os 10 módulos avaliados no TCC, exatamente como foram colados nos prompts e na Bancada RTL. Todos
-são sequenciais. Alguns foram ajustados para compilar no Verilator (o ajuste está comentado no
-início do arquivo).
+são sequenciais.
 
 | Arquivo | Módulo no TCC | Origem | Função | ICV | Classe |
 |---|---|---|---|---|---|
@@ -16,10 +15,6 @@ início do arquivo).
 | `fsm_serialdp.v` | Fsm serialdp | HDLBits | receptor serial com paridade | 2,2 | Alta |
 | `spi_master.v` | SPI Master | OpenCores | mestre de comunicação SPI | 2,4 | Muito Alta |
 | `wbuart32_txuartlite.v` | wbuart32 | OpenCores | transmissor UART (`txuartlite`) | 2,5 | Muito Alta |
-
-Ajustes para o Verilator (só sintaxe, sem mudar o comportamento): no Conwaylife, `q` passou a ser
-`output reg`, `++i` virou `i = i + 1` e as atribuições `<=` do bloco combinacional viraram `=`; no
-Fancytimer, `count` passou a ser `output reg`.
 
 Projetos do OpenCores (situação na página de cada projeto, conferida em 21/11/2026):
 
