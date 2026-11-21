@@ -1,0 +1,241 @@
+﻿llm;rodada;modulo;estrategia;resultado;mutantes_detectados;cobertura_linha;cobertura_desvio;cobertura_alternancia
+GPT-5.6 Luna;1;Fsm serialdp;Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Fsm serialdp;Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Fsm serialdp;Especialista Zero-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;1;Fsm serialdp;Especialista Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Fsm serialdp;Planning Zero-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;1;Fsm serialdp;Planning Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Exams/2012 q2fsm;Zero-shot;aprovado;3;100,0;100,0;100,0
+GPT-5.6 Luna;1;Exams/2012 q2fsm;Few-shot;aprovado;3;100,0;100,0;100,0
+GPT-5.6 Luna;1;Exams/2012 q2fsm;Especialista Zero-shot;aprovado;3;100,0;100,0;100,0
+GPT-5.6 Luna;1;Exams/2012 q2fsm;Especialista Few-shot;aprovado;3;100,0;100,0;100,0
+GPT-5.6 Luna;1;Exams/2012 q2fsm;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Exams/2012 q2fsm;Planning Few-shot;aprovado;3;100,0;100,0;100,0
+GPT-5.6 Luna;1;Count clock;Zero-shot;aprovado;4;100,0;100,0;67,9
+GPT-5.6 Luna;1;Count clock;Few-shot;aprovado;4;75,0;65,5;46,4
+GPT-5.6 Luna;1;Count clock;Especialista Zero-shot;reprovado;0;75,0;50,0;46,4
+GPT-5.6 Luna;1;Count clock;Especialista Few-shot;aprovado;4;100,0;100,0;82,1
+GPT-5.6 Luna;1;Count clock;Planning Zero-shot;aprovado;4;100,0;100,0;82,1
+GPT-5.6 Luna;1;Count clock;Planning Few-shot;aprovado;4;100,0;100,0;53,6
+GPT-5.6 Luna;1;Cs450/gshare;Zero-shot;reprovado;0;100,0;100,0;51,5
+GPT-5.6 Luna;1;Cs450/gshare;Few-shot;aprovado;3;100,0;100,0;49,1
+GPT-5.6 Luna;1;Cs450/gshare;Especialista Zero-shot;aprovado;3;100,0;100,0;52,2
+GPT-5.6 Luna;1;Cs450/gshare;Especialista Few-shot;reprovado;0;100,0;100,0;51,9
+GPT-5.6 Luna;1;Cs450/gshare;Planning Zero-shot;reprovado;0;33,3;75,0;2,1
+GPT-5.6 Luna;1;Cs450/gshare;Planning Few-shot;reprovado;0;66,7;87,5;7,9
+GPT-5.6 Luna;1;Lemmings1;Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Lemmings1;Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Lemmings1;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Lemmings1;Especialista Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Lemmings1;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;Lemmings1;Planning Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;1;wbuart32;Zero-shot;reprovado;0;84,2;80,0;50,0
+GPT-5.6 Luna;1;wbuart32;Few-shot;aprovado;2;94,7;90,0;83,3
+GPT-5.6 Luna;1;wbuart32;Especialista Zero-shot;aprovado;3;100,0;90,0;80,6
+GPT-5.6 Luna;1;wbuart32;Especialista Few-shot;aprovado;3;100,0;90,0;83,3
+GPT-5.6 Luna;1;wbuart32;Planning Zero-shot;aprovado;3;100,0;90,0;93,3
+GPT-5.6 Luna;1;wbuart32;Planning Few-shot;aprovado;4;100,0;90,0;54,0
+GPT-5.6 Luna;1;CORDIC;Zero-shot;reprovado;0;50,0;98,3;48,2
+GPT-5.6 Luna;1;CORDIC;Few-shot;aprovado;3;50,0;100,0;97,6
+GPT-5.6 Luna;1;CORDIC;Especialista Zero-shot;aprovado;3;50,0;100,0;99,6
+GPT-5.6 Luna;1;CORDIC;Especialista Few-shot;aprovado;3;51,4;100,0;90,0
+GPT-5.6 Luna;1;CORDIC;Planning Zero-shot;reprovado;0;50,0;75,0;17,0
+GPT-5.6 Luna;1;CORDIC;Planning Few-shot;aprovado;3;50,0;100,0;98,2
+GPT-5.6 Luna;1;Conwaylife;Zero-shot;reprovado;0;100,0;100,0;2,7
+GPT-5.6 Luna;1;Conwaylife;Few-shot;reprovado;0;100,0;100,0;1,8
+GPT-5.6 Luna;1;Conwaylife;Especialista Zero-shot;aprovado;4;100,0;100,0;4,0
+GPT-5.6 Luna;1;Conwaylife;Especialista Few-shot;reprovado;0;100,0;100,0;3,1
+GPT-5.6 Luna;1;Conwaylife;Planning Zero-shot;aprovado;4;100,0;100,0;5,3
+GPT-5.6 Luna;1;Conwaylife;Planning Few-shot;aprovado;4;100,0;100,0;5,3
+GPT-5.6 Luna;1;Fancytimer;Zero-shot;reprovado;0;100,0;40,0;68,6
+GPT-5.6 Luna;1;Fancytimer;Few-shot;reprovado;0;100,0;90,0;80,0
+GPT-5.6 Luna;1;Fancytimer;Especialista Zero-shot;reprovado;0;100,0;30,0;51,4
+GPT-5.6 Luna;1;Fancytimer;Especialista Few-shot;aprovado;3;100,0;90,0;80,0
+GPT-5.6 Luna;1;Fancytimer;Planning Zero-shot;reprovado;0;75,0;10,0;42,9
+GPT-5.6 Luna;1;Fancytimer;Planning Few-shot;reprovado;0;100,0;80,0;77,1
+GPT-5.6 Luna;1;SPI Master;Zero-shot;tempo esgotado;0;;;
+GPT-5.6 Luna;1;SPI Master;Few-shot;aprovado;3;76,9;100,0;84,1
+GPT-5.6 Luna;1;SPI Master;Especialista Zero-shot;reprovado;0;53,8;36,4;38,1
+GPT-5.6 Luna;1;SPI Master;Especialista Few-shot;aprovado;4;92,3;100,0;96,8
+GPT-5.6 Luna;1;SPI Master;Planning Zero-shot;reprovado;0;69,2;90,9;69,8
+GPT-5.6 Luna;1;SPI Master;Planning Few-shot;aprovado;2;92,3;95,5;96,8
+GPT-5.6 Luna;2;Fsm serialdp;Zero-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;2;Fsm serialdp;Few-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;2;Fsm serialdp;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Fsm serialdp;Especialista Few-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;2;Fsm serialdp;Planning Zero-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;2;Fsm serialdp;Planning Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Exams/2012 q2fsm;Zero-shot;aprovado;3;100,0;100,0;100,0
+GPT-5.6 Luna;2;Exams/2012 q2fsm;Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Exams/2012 q2fsm;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Exams/2012 q2fsm;Especialista Few-shot;reprovado;0;100,0;100,0;100,0
+GPT-5.6 Luna;2;Exams/2012 q2fsm;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Exams/2012 q2fsm;Planning Few-shot;reprovado;0;88,9;100,0;93,8
+GPT-5.6 Luna;2;Count clock;Zero-shot;reprovado;0;100,0;87,5;71,4
+GPT-5.6 Luna;2;Count clock;Few-shot;aprovado;4;100,0;100,0;64,3
+GPT-5.6 Luna;2;Count clock;Especialista Zero-shot;reprovado;0;100,0;100,0;82,1
+GPT-5.6 Luna;2;Count clock;Especialista Few-shot;reprovado;0;100,0;100,0;82,1
+GPT-5.6 Luna;2;Count clock;Planning Zero-shot;aprovado;4;100,0;100,0;82,1
+GPT-5.6 Luna;2;Count clock;Planning Few-shot;aprovado;4;100,0;100,0;82,1
+GPT-5.6 Luna;2;Cs450/gshare;Zero-shot;aprovado;3;100,0;100,0;54,0
+GPT-5.6 Luna;2;Cs450/gshare;Few-shot;aprovado;3;100,0;100,0;49,8
+GPT-5.6 Luna;2;Cs450/gshare;Especialista Zero-shot;reprovado;0;100,0;100,0;51,5
+GPT-5.6 Luna;2;Cs450/gshare;Especialista Few-shot;aprovado;2;100,0;100,0;55,0
+GPT-5.6 Luna;2;Cs450/gshare;Planning Zero-shot;aprovado;3;100,0;100,0;56,4
+GPT-5.6 Luna;2;Cs450/gshare;Planning Few-shot;aprovado;3;100,0;100,0;53,3
+GPT-5.6 Luna;2;Lemmings1;Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Lemmings1;Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Lemmings1;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Lemmings1;Especialista Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Lemmings1;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Lemmings1;Planning Few-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;wbuart32;Zero-shot;aprovado;3;100,0;90,0;50,0
+GPT-5.6 Luna;2;wbuart32;Few-shot;reprovado;0;94,7;90,0;77,4
+GPT-5.6 Luna;2;wbuart32;Especialista Zero-shot;reprovado;0;94,7;90,0;50,0
+GPT-5.6 Luna;2;wbuart32;Especialista Few-shot;aprovado;3;100,0;90,0;80,0
+GPT-5.6 Luna;2;wbuart32;Planning Zero-shot;aprovado;4;100,0;90,0;90,3
+GPT-5.6 Luna;2;wbuart32;Planning Few-shot;aprovado;4;100,0;90,0;90,3
+GPT-5.6 Luna;2;CORDIC;Zero-shot;aprovado;2;50,0;98,3;48,2
+GPT-5.6 Luna;2;CORDIC;Few-shot;reprovado;0;50,0;75,0;17,0
+GPT-5.6 Luna;2;CORDIC;Especialista Zero-shot;aprovado;2;50,0;98,3;48,2
+GPT-5.6 Luna;2;CORDIC;Especialista Few-shot;aprovado;3;50,0;100,0;66,6
+GPT-5.6 Luna;2;CORDIC;Planning Zero-shot;aprovado;3;50,0;100,0;100,0
+GPT-5.6 Luna;2;CORDIC;Planning Few-shot;aprovado;3;50,0;100,0;100,0
+GPT-5.6 Luna;2;Conwaylife;Zero-shot;aprovado;4;100,0;100,0;75,6
+GPT-5.6 Luna;2;Conwaylife;Few-shot;aprovado;4;100,0;100,0;68,1
+GPT-5.6 Luna;2;Conwaylife;Especialista Zero-shot;aprovado;4;100,0;100,0;77,4
+GPT-5.6 Luna;2;Conwaylife;Especialista Few-shot;reprovado;0;100,0;100,0;76,4
+GPT-5.6 Luna;2;Conwaylife;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+GPT-5.6 Luna;2;Conwaylife;Planning Few-shot;aprovado;4;100,0;100,0;71,2
+GPT-5.6 Luna;2;Fancytimer;Zero-shot;reprovado;0;100,0;70,0;68,6
+GPT-5.6 Luna;2;Fancytimer;Few-shot;reprovado;0;100,0;80,0;77,1
+GPT-5.6 Luna;2;Fancytimer;Especialista Zero-shot;aprovado;4;100,0;80,0;77,1
+GPT-5.6 Luna;2;Fancytimer;Especialista Few-shot;reprovado;0;100,0;40,0;68,6
+GPT-5.6 Luna;2;Fancytimer;Planning Zero-shot;aprovado;3;100,0;90,0;80,0
+GPT-5.6 Luna;2;Fancytimer;Planning Few-shot;aprovado;4;100,0;90,0;80,0
+GPT-5.6 Luna;2;SPI Master;Zero-shot;reprovado;0;69,2;90,9;63,5
+GPT-5.6 Luna;2;SPI Master;Few-shot;reprovado;0;69,2;81,8;63,5
+GPT-5.6 Luna;2;SPI Master;Especialista Zero-shot;aprovado;3;92,3;100,0;90,5
+GPT-5.6 Luna;2;SPI Master;Especialista Few-shot;aprovado;3;76,9;100,0;82,5
+GPT-5.6 Luna;2;SPI Master;Planning Zero-shot;aprovado;2;76,9;100,0;73,0
+GPT-5.6 Luna;2;SPI Master;Planning Few-shot;aprovado;3;69,2;90,9;71,4
+Gemini 3.5 Flash-Lite;1;Fsm serialdp;Zero-shot;reprovado;0;94,1;100,0;94,4
+Gemini 3.5 Flash-Lite;1;Fsm serialdp;Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Fsm serialdp;Especialista Zero-shot;aprovado;4;94,1;100,0;97,2
+Gemini 3.5 Flash-Lite;1;Fsm serialdp;Especialista Few-shot;aprovado;4;94,1;100,0;94,4
+Gemini 3.5 Flash-Lite;1;Fsm serialdp;Planning Zero-shot;reprovado;0;94,1;100,0;94,4
+Gemini 3.5 Flash-Lite;1;Fsm serialdp;Planning Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Exams/2012 q2fsm;Zero-shot;aprovado;3;88,9;100,0;87,5
+Gemini 3.5 Flash-Lite;1;Exams/2012 q2fsm;Few-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Exams/2012 q2fsm;Especialista Zero-shot;reprovado;0;88,9;100,0;87,5
+Gemini 3.5 Flash-Lite;1;Exams/2012 q2fsm;Especialista Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Exams/2012 q2fsm;Planning Zero-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Exams/2012 q2fsm;Planning Few-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Count clock;Zero-shot;reprovado;0;75,0;25,0;28,6
+Gemini 3.5 Flash-Lite;1;Count clock;Few-shot;aprovado;3;75,0;37,5;28,6
+Gemini 3.5 Flash-Lite;1;Count clock;Especialista Zero-shot;aprovado;3;75,0;62,5;46,4
+Gemini 3.5 Flash-Lite;1;Count clock;Especialista Few-shot;reprovado;0;75,0;50,0;46,4
+Gemini 3.5 Flash-Lite;1;Count clock;Planning Zero-shot;aprovado;3;75,0;62,5;46,4
+Gemini 3.5 Flash-Lite;1;Count clock;Planning Few-shot;aprovado;2;75,0;37,5;25,0
+Gemini 3.5 Flash-Lite;1;Cs450/gshare;Zero-shot;reprovado;0;100,0;100,0;51,5
+Gemini 3.5 Flash-Lite;1;Cs450/gshare;Few-shot;reprovado;0;100,0;87,5;49,1
+Gemini 3.5 Flash-Lite;1;Cs450/gshare;Especialista Zero-shot;aprovado;0;100,0;87,5;48,5
+Gemini 3.5 Flash-Lite;1;Cs450/gshare;Especialista Few-shot;aprovado;0;100,0;87,5;49,8
+Gemini 3.5 Flash-Lite;1;Cs450/gshare;Planning Zero-shot;aprovado;1;100,0;100,0;51,5
+Gemini 3.5 Flash-Lite;1;Cs450/gshare;Planning Few-shot;reprovado;0;66,7;87,5;48,8
+Gemini 3.5 Flash-Lite;1;Lemmings1;Zero-shot;aprovado;2;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Lemmings1;Few-shot;aprovado;4;100,0;50,0;100,0
+Gemini 3.5 Flash-Lite;1;Lemmings1;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Lemmings1;Especialista Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Lemmings1;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;1;Lemmings1;Planning Few-shot;aprovado;4;100,0;50,0;100,0
+Gemini 3.5 Flash-Lite;1;wbuart32;Zero-shot;reprovado;0;94,7;90,0;80,6
+Gemini 3.5 Flash-Lite;1;wbuart32;Few-shot;reprovado;0;94,7;90,0;48,0
+Gemini 3.5 Flash-Lite;1;wbuart32;Especialista Zero-shot;aprovado;1;100,0;90,0;77,4
+Gemini 3.5 Flash-Lite;1;wbuart32;Especialista Few-shot;aprovado;1;100,0;90,0;48,0
+Gemini 3.5 Flash-Lite;1;wbuart32;Planning Zero-shot;aprovado;3;100,0;90,0;77,4
+Gemini 3.5 Flash-Lite;1;wbuart32;Planning Few-shot;aprovado;3;94,7;90,0;48,0
+Gemini 3.5 Flash-Lite;1;CORDIC;Zero-shot;aprovado;1;50,0;98,3;47,0
+Gemini 3.5 Flash-Lite;1;CORDIC;Few-shot;reprovado;0;50,0;98,3;61,5
+Gemini 3.5 Flash-Lite;1;CORDIC;Especialista Zero-shot;aprovado;1;50,0;98,3;61,5
+Gemini 3.5 Flash-Lite;1;CORDIC;Especialista Few-shot;aprovado;1;50,0;98,3;59,7
+Gemini 3.5 Flash-Lite;1;CORDIC;Planning Zero-shot;aprovado;2;50,0;98,3;56,3
+Gemini 3.5 Flash-Lite;1;CORDIC;Planning Few-shot;aprovado;0;50,0;98,3;49,1
+Gemini 3.5 Flash-Lite;1;Conwaylife;Zero-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;1;Conwaylife;Few-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;1;Conwaylife;Especialista Zero-shot;aprovado;0;100,0;100,0;1,9
+Gemini 3.5 Flash-Lite;1;Conwaylife;Especialista Few-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;1;Conwaylife;Planning Zero-shot;aprovado;0;100,0;100,0;1,9
+Gemini 3.5 Flash-Lite;1;Conwaylife;Planning Few-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;1;Fancytimer;Zero-shot;reprovado;0;100,0;30,0;54,3
+Gemini 3.5 Flash-Lite;1;Fancytimer;Few-shot;aprovado;4;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;1;Fancytimer;Especialista Zero-shot;aprovado;0;100,0;40,0;60,0
+Gemini 3.5 Flash-Lite;1;Fancytimer;Especialista Few-shot;aprovado;3;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;1;Fancytimer;Planning Zero-shot;aprovado;1;100,0;40,0;62,9
+Gemini 3.5 Flash-Lite;1;Fancytimer;Planning Few-shot;aprovado;1;100,0;40,0;60,0
+Gemini 3.5 Flash-Lite;1;SPI Master;Zero-shot;aprovado;2;76,9;100,0;88,9
+Gemini 3.5 Flash-Lite;1;SPI Master;Few-shot;aprovado;1;69,2;90,9;63,5
+Gemini 3.5 Flash-Lite;1;SPI Master;Especialista Zero-shot;aprovado;1;76,9;100,0;79,4
+Gemini 3.5 Flash-Lite;1;SPI Master;Especialista Few-shot;aprovado;4;69,2;90,9;61,9
+Gemini 3.5 Flash-Lite;1;SPI Master;Planning Zero-shot;reprovado;0;69,2;90,9;69,8
+Gemini 3.5 Flash-Lite;1;SPI Master;Planning Few-shot;reprovado;0;76,9;81,8;76,2
+Gemini 3.5 Flash-Lite;2;Fsm serialdp;Zero-shot;reprovado;0;94,1;100,0;94,4
+Gemini 3.5 Flash-Lite;2;Fsm serialdp;Few-shot;aprovado;4;94,1;100,0;97,2
+Gemini 3.5 Flash-Lite;2;Fsm serialdp;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Fsm serialdp;Especialista Few-shot;aprovado;4;94,1;100,0;97,2
+Gemini 3.5 Flash-Lite;2;Fsm serialdp;Planning Zero-shot;reprovado;0;94,1;100,0;94,4
+Gemini 3.5 Flash-Lite;2;Fsm serialdp;Planning Few-shot;aprovado;4;94,1;100,0;97,2
+Gemini 3.5 Flash-Lite;2;Exams/2012 q2fsm;Zero-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Exams/2012 q2fsm;Few-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Exams/2012 q2fsm;Especialista Zero-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Exams/2012 q2fsm;Especialista Few-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Exams/2012 q2fsm;Planning Zero-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Exams/2012 q2fsm;Planning Few-shot;aprovado;3;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Count clock;Zero-shot;aprovado;2;75,0;25,0;25,0
+Gemini 3.5 Flash-Lite;2;Count clock;Few-shot;aprovado;3;75,0;50,0;46,4
+Gemini 3.5 Flash-Lite;2;Count clock;Especialista Zero-shot;reprovado;0;75,0;37,5;21,4
+Gemini 3.5 Flash-Lite;2;Count clock;Especialista Few-shot;aprovado;2;75,0;37,5;25,0
+Gemini 3.5 Flash-Lite;2;Count clock;Planning Zero-shot;aprovado;2;75,0;37,5;25,0
+Gemini 3.5 Flash-Lite;2;Count clock;Planning Few-shot;aprovado;2;75,0;37,5;25,0
+Gemini 3.5 Flash-Lite;2;Cs450/gshare;Zero-shot;aprovado;0;100,0;87,5;49,1
+Gemini 3.5 Flash-Lite;2;Cs450/gshare;Few-shot;aprovado;1;100,0;87,5;51,2
+Gemini 3.5 Flash-Lite;2;Cs450/gshare;Especialista Zero-shot;reprovado;0;66,7;87,5;47,4
+Gemini 3.5 Flash-Lite;2;Cs450/gshare;Especialista Few-shot;reprovado;0;100,0;100,0;49,8
+Gemini 3.5 Flash-Lite;2;Cs450/gshare;Planning Zero-shot;reprovado;0;66,7;87,5;48,8
+Gemini 3.5 Flash-Lite;2;Cs450/gshare;Planning Few-shot;reprovado;0;100,0;87,5;52,2
+Gemini 3.5 Flash-Lite;2;Lemmings1;Zero-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Lemmings1;Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Lemmings1;Especialista Zero-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Lemmings1;Especialista Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Lemmings1;Planning Zero-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;Lemmings1;Planning Few-shot;aprovado;4;100,0;100,0;100,0
+Gemini 3.5 Flash-Lite;2;wbuart32;Zero-shot;aprovado;3;100,0;90,0;80,0
+Gemini 3.5 Flash-Lite;2;wbuart32;Few-shot;aprovado;3;94,7;90,0;48,0
+Gemini 3.5 Flash-Lite;2;wbuart32;Especialista Zero-shot;aprovado;3;100,0;90,0;48,0
+Gemini 3.5 Flash-Lite;2;wbuart32;Especialista Few-shot;aprovado;3;100,0;90,0;77,4
+Gemini 3.5 Flash-Lite;2;wbuart32;Planning Zero-shot;aprovado;3;100,0;90,0;80,0
+Gemini 3.5 Flash-Lite;2;wbuart32;Planning Few-shot;aprovado;3;100,0;90,0;90,3
+Gemini 3.5 Flash-Lite;2;CORDIC;Zero-shot;reprovado;0;50,0;98,3;57,4
+Gemini 3.5 Flash-Lite;2;CORDIC;Few-shot;aprovado;1;50,0;98,3;69,9
+Gemini 3.5 Flash-Lite;2;CORDIC;Especialista Zero-shot;reprovado;0;50,0;25,0;2,4
+Gemini 3.5 Flash-Lite;2;CORDIC;Especialista Few-shot;aprovado;2;50,0;98,3;40,7
+Gemini 3.5 Flash-Lite;2;CORDIC;Planning Zero-shot;reprovado;0;50,0;100,0;77,4
+Gemini 3.5 Flash-Lite;2;CORDIC;Planning Few-shot;aprovado;2;50,0;98,3;49,1
+Gemini 3.5 Flash-Lite;2;Conwaylife;Zero-shot;aprovado;3;100,0;100,0;2,1
+Gemini 3.5 Flash-Lite;2;Conwaylife;Few-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;2;Conwaylife;Especialista Zero-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;2;Conwaylife;Especialista Few-shot;aprovado;3;100,0;100,0;1,8
+Gemini 3.5 Flash-Lite;2;Conwaylife;Planning Zero-shot;aprovado;0;100,0;100,0;1,9
+Gemini 3.5 Flash-Lite;2;Conwaylife;Planning Few-shot;aprovado;4;100,0;100,0;3,6
+Gemini 3.5 Flash-Lite;2;Fancytimer;Zero-shot;reprovado;0;100,0;80,0;65,7
+Gemini 3.5 Flash-Lite;2;Fancytimer;Few-shot;aprovado;3;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;2;Fancytimer;Especialista Zero-shot;aprovado;3;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;2;Fancytimer;Especialista Few-shot;aprovado;3;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;2;Fancytimer;Planning Zero-shot;aprovado;3;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;2;Fancytimer;Planning Few-shot;aprovado;3;100,0;100,0;80,0
+Gemini 3.5 Flash-Lite;2;SPI Master;Zero-shot;aprovado;1;76,9;100,0;85,7
+Gemini 3.5 Flash-Lite;2;SPI Master;Few-shot;aprovado;1;69,2;90,9;74,6
+Gemini 3.5 Flash-Lite;2;SPI Master;Especialista Zero-shot;aprovado;3;69,2;100,0;66,7
+Gemini 3.5 Flash-Lite;2;SPI Master;Especialista Few-shot;aprovado;2;69,2;90,9;63,5
+Gemini 3.5 Flash-Lite;2;SPI Master;Planning Zero-shot;aprovado;1;76,9;100,0;71,4
+Gemini 3.5 Flash-Lite;2;SPI Master;Planning Few-shot;aprovado;1;69,2;90,9;71,4

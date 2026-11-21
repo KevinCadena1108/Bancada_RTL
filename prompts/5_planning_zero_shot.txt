@@ -1,0 +1,23 @@
+Antes de gerar o testbench, analise o módulo RTL abaixo.
+Primeiro, identifique as entradas e saídas do módulo, verifique
+se ele é combinacional ou sequencial, descreva o comportamento
+esperado, identifique estados, operações, ramos, sinais de
+controle, casos de borda e cenários de teste.
+
+Depois da análise, gere o testbench final.
+
+Módulo RTL:
+
+[MÓDULO]
+
+Requisitos do testbench:
+
+- O módulo do testbench deve se chamar tb.
+- Instancie o módulo sob teste e compare as saídas com os
+  valores esperados usando !==.
+- Em caso de erro, use $fatal(1, ...) para encerrar com
+  código de erro.
+- Cada $display deve ter a string em uma única linha.
+- Termine com $finish.
+- Deve compilar no Verilator
+  (código sintetizável, sem arquivos externos).

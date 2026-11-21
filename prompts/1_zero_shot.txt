@@ -1,0 +1,17 @@
+Crie um testbench para o módulo RTL abaixo.
+
+Módulo RTL:
+
+[MÓDULO]
+
+Requisitos do testbench:
+
+- O módulo do testbench deve se chamar tb.
+- Instancie o módulo sob teste e compare as saídas com os
+  valores esperados usando !==.
+- Em caso de erro, use $fatal(1, ...) para encerrar com
+  código de erro.
+- Cada $display deve ter a string em uma única linha.
+- Termine com $finish.
+- Deve compilar no Verilator
+  (código sintetizável, sem arquivos externos).

@@ -25,8 +25,14 @@ testbenches, e todos foram avaliados nesta bancada.
 As gerações foram feitas na interface web de cada LLM, que não deixa ajustar a temperatura. Por
 isso cada combinação foi gerada duas vezes. Cada geração foi feita num chat novo, em guia anônima,
 e valeu o primeiro testbench gerado. Todos os prompts pediram os mesmos requisitos mínimos (ver
-[Formato do testbench](#formato-do-testbench)). Os prompts completos estão em
-[`documentacao/apendice_prompts.tex`](documentacao/apendice_prompts.tex).
+[Formato do testbench](#formato-do-testbench)).
+
+Materiais para reproduzir o experimento:
+
+- [`modulos/`](modulos/README.md): os 10 módulos RTL, como foram usados;
+- [`prompts/`](prompts/README.md): os 6 prompts, com `[MÓDULO]` no lugar do código;
+- [`resultados/`](resultados/README.md): o resultado de cada um dos 240 testbenches (CSV);
+- esta bancada, para avaliar novos testbenches com as mesmas medidas.
 
 A análise é descritiva. Ela usa quatro medidas.
 
@@ -271,6 +277,9 @@ veriweb/
 ├── requirements.txt
 ├── start.sh              sobe o servidor
 ├── planilha/doPost.gs    cópia do Apps Script que grava na planilha do experimento
+├── modulos/              os 10 módulos RTL do experimento
+├── prompts/              os 6 prompts, um por estratégia
+├── resultados/           resultado de cada um dos 240 testbenches (CSV)
 ├── analise/              scripts que geram os PDFs, a figura e o apêndice do TCC
 │   ├── estatistica/      dados da planilha (pdf_comum.py, coberturas.json) e geradores
 │   ├── documentos/       gerador dos PDFs da pasta "Documentação" do Google Drive
