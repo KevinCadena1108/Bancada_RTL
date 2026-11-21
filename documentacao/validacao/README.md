@@ -16,7 +16,7 @@ Metodologia do TCC.
 | [`../drive/prova_fsm_completo.pdf`](../drive/prova_fsm_completo.pdf) | detector de "101": resultado da API ligado ponto a ponto ao `coverage.dat` |
 
 Os documentos foram feitos pelo autor em 2026-11-06. Os dois PDFs foram refeitos em 2026-11-18 por
-`analise/documentos/gerar_pdfs_drive.py` e ficam só em `documentacao/drive/` (antes havia uma cópia
+`documentacao/analise/documentos/gerar_pdfs_drive.py` e ficam só em `documentacao/drive/` (antes havia uma cópia
 idêntica aqui): o código agora mostra `<=` e `&&` (antes saía `&lt;=` e `&amp;&amp;`), a linha 12
 do detector de "11" é o bloco `always` (não o `assign`) e a cobertura de FSM saiu. Os números
 foram conferidos de novo no Verilator 5.032.
@@ -42,10 +42,10 @@ de `resultado.md`, e a coluna FSM não aparece.
 
 ## Como a comparação é feita
 
-- **Bancada:** as funções do `app.py` (`compilar_e_cobrir` e `testar_mutacao`), as mesmas da rota
+- **Bancada:** as funções do `api/app.py` (`compilar_e_cobrir` e `testar_mutacao`), as mesmas da rota
   `/avaliar`, mas sem ela — nada vai para a planilha nem para `avaliacoes/`.
 - **Manual (independente da ferramenta):** `verilator --binary --timing --coverage` (sem o harness
-  `sim/main.cpp` da bancada), simulação, e contagem no `coverage.dat` com `awk`: ponto do `dut.v`
+  `api/sim/main.cpp` da bancada), simulação, e contagem no `coverage.dat` com `awk`: ponto do `dut.v`
   com contagem ≥ 1 = coberto. FSM = pontos `v_line` com `o=case` (braços do `case`, inclusive o
   `default`). Cada mutante que a bancada avaliou é aplicado à mão na mesma linha, compilado com
   `--binary` e simulado com o mesmo testbench: código de saída ≠ 0 = morto.
@@ -66,7 +66,7 @@ Os 5 casos deram **iguais** em tudo (ver `resultado.md`). Destaques:
 No WSL, na raiz do repositório, com o venv da bancada (tem o `flask`):
 
 ```
-~/veriweb/venv/bin/python analise/validacao/validar_bancada.py
+~/veriweb/venv/bin/python documentacao/analise/validacao/validar_bancada.py
 ```
 
 Imprime bancada × manual de cada caso, regrava `resultado.md` e sai com erro se algo não bater.

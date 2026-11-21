@@ -8,8 +8,8 @@ para abrir direto no Excel em português.
 |---|---|
 | `llm` | GPT-5.6 Luna ou Gemini 3.5 Flash-Lite |
 | `rodada` | 1 ou 2 |
-| `modulo` | nome do módulo no TCC (arquivos em `modulos/`) |
-| `estrategia` | uma das 6 estratégias (prompts em `prompts/`) |
+| `modulo` | nome do módulo no TCC (arquivos em `documentacao/modulos/`) |
+| `estrategia` | uma das 6 estratégias (prompts em `documentacao/prompts/`) |
 | `resultado` | `aprovado` no circuito original, `reprovado` (não compilou ou falhou) ou `tempo esgotado` |
 | `mutantes_detectados` | de 0 a 4; reprovados e tempo esgotado contam 0 (a mutação só roda para os aprovados) |
 | `cobertura_linha`, `cobertura_desvio`, `cobertura_alternancia` | cobertura em % registrada pela Bancada RTL |
@@ -21,6 +21,6 @@ Com esse arquivo se refazem os números do TCC, por exemplo 175 aprovados de 240
 mutantes detectados de 960 possíveis (*score* efetivo de 54,1%).
 
 Os dados vêm da planilha do experimento (Google Sheets), copiada em
-`analise/estatistica/pdf_comum.py` e `analise/estatistica/coberturas.json` e conferida célula a
-célula. O CSV é gerado por `analise/estatistica/gerar_csv_resultados.py`. Os *testbenches* em si
+`documentacao/analise/estatistica/pdf_comum.py` e `coberturas.json` e conferida célula a
+célula. O CSV é gerado por `documentacao/analise/estatistica/gerar_csv_resultados.py`. Os *testbenches* em si
 não estão no repositório: os da 1ª rodada não foram guardados.

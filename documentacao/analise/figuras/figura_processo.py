@@ -28,8 +28,8 @@ FIM_BORDA = HexColor("#3C8D4A")
 NEG = HexColor("#F8E4E2")
 NEG_BORDA = HexColor("#B04A3F")
 
-RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "documentacao", "figuras", "processo_trabalho.pdf")
+DOC = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(DOC, "figuras", "processo_trabalho.pdf")
 c = canvas.Canvas(SAIDA, pagesize=(W * mm, H * mm))
 c.setTitle("Processo do trabalho")
 

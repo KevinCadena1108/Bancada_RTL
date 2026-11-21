@@ -1,24 +1,30 @@
 # Documentação do TCC
 
-Material de apoio do TCC "Avaliação de estratégias de engenharia de prompt na geração de
-testbenches para verificação de módulos RTL". O texto do TCC fica no Overleaf. Aqui ficam os
-apêndices em LaTeX, a figura, os PDFs que explicam os resultados e a validação da Bancada RTL.
+Material do TCC "Avaliação de estratégias de engenharia de prompt na geração de testbenches para
+verificação de módulos RTL". O texto do TCC fica no Overleaf. Aqui ficam os materiais do
+experimento (módulos, prompts e resultados), os apêndices em LaTeX, as figuras, os PDFs que
+explicam os resultados, a validação da Bancada RTL e os scripts que geram tudo isso. O código da
+bancada está em [`../api/`](../api/).
 
-Todos os PDFs são gerados por scripts em `analise/`. Os números vêm da planilha do experimento
-(10 módulos, 6 estratégias, 2 LLMs, 2 rodadas = 240 testbenches), copiada em
-`analise/estatistica/pdf_comum.py` (mutantes) e `analise/estatistica/coberturas.json` (coberturas).
+Os números vêm da planilha do experimento (10 módulos, 6 estratégias, 2 LLMs, 2 rodadas = 240
+testbenches), copiada em `analise/estatistica/pdf_comum.py` (mutantes) e
+`analise/estatistica/coberturas.json` (coberturas).
 
 ## O que tem aqui
 
-| Arquivo | O que é | Gerado por |
+| Pasta ou arquivo | O que é | Gerado por |
 |---|---|---|
-| `apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
-| `apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados (origem e função), cálculo do ICV e uma tabela de resultados por módulo | `analise/estatistica/gerar_apendice_latex.py` |
-| `figuras/processo_trabalho.pdf` e `.png` | figura das 4 etapas do trabalho (preparação, geração, avaliação, análise) | `analise/figuras/figura_processo.py` |
-| `resultados_explicados.pdf` | cada resultado da seção Resultados, com o cálculo passo a passo e o que ele representa | `analise/estatistica/gerar_pdf_resultados.py` |
-| `posto_medio_passo_a_passo.pdf` | o posto médio explicado, com a fonte da fórmula e os resultados de cada estratégia | `analise/estatistica/gera_pdf_posto.py` |
+| [`modulos/`](modulos/README.md) | os 10 módulos RTL do experimento, como foram usados | baixados do Drive do autor |
+| [`prompts/`](prompts/README.md) | os 6 prompts, um por estratégia | `analise/documentos/gerar_prompts_txt.py` |
+| [`resultados/`](resultados/README.md) | `resultados_testbenches.csv` (os 240 testbenches) | `analise/estatistica/gerar_csv_resultados.py` |
+| `resultados/resultados_explicados.pdf` | cada resultado da seção Resultados, com o cálculo passo a passo e o que ele representa | `analise/estatistica/gerar_pdf_resultados.py` |
+| `resultados/posto_medio_passo_a_passo.pdf` | o posto médio explicado, com a fonte da fórmula e os resultados de cada estratégia | `analise/estatistica/gera_pdf_posto.py` |
+| `apendices/apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
+| `apendices/apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados, cálculo do ICV e uma tabela de resultados por módulo | `analise/estatistica/gerar_apendice_latex.py` |
+| `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`) e capturas da tela da bancada (`bancada_rtl_*`) | `analise/figuras/figura_processo.py` (processo) |
 | `drive/` | os 8 PDFs explicativos da pasta "Documentação" do Google Drive (ver abaixo) | `analise/documentos/gerar_pdfs_drive.py` |
-| `validacao/` | validação da Bancada RTL, ferramenta × Verilator à mão ([README](validacao/README.md)) | `analise/validacao/validar_bancada.py` |
+| [`validacao/`](validacao/README.md) | validação da Bancada RTL, ferramenta × Verilator à mão | `analise/validacao/validar_bancada.py` |
+| `analise/` | os scripts acima e os dados da planilha | — |
 
 ## Pasta `drive/`
 
@@ -41,7 +47,7 @@ continuam os mesmos.
 todos de execução real no Verilator 5.032.
 
 A pasta do Drive também tem `resultados_explicados.pdf` e `posto_medio_passo_a_passo.pdf`, enviados
-em 19/11/2026. No repositório, eles ficam direto em `documentacao/`.
+em 19/11/2026. No repositório, eles ficam em `resultados/`.
 
 Os arquivos do Drive "Comparação API/mão" e "prompting" são documentos do Google e não têm cópia
 aqui. A versão em Word da comparação está em `validacao/comparacao_api_manual.docx`.
@@ -66,11 +72,13 @@ e não no `/tmp`, porque o WSL apaga o `/tmp` quando desliga.
 
 ```bash
 python3 -m venv ~/venv-docs && ~/venv-docs/bin/pip install reportlab pypdfium2
-~/venv-docs/bin/python analise/estatistica/gerar_pdf_resultados.py
-~/venv-docs/bin/python analise/estatistica/gera_pdf_posto.py
-~/venv-docs/bin/python analise/estatistica/gerar_apendice_latex.py
-~/venv-docs/bin/python analise/documentos/gerar_pdfs_drive.py
-~/venv-docs/bin/python analise/figuras/figura_processo.py
+~/venv-docs/bin/python documentacao/analise/estatistica/gerar_pdf_resultados.py
+~/venv-docs/bin/python documentacao/analise/estatistica/gera_pdf_posto.py
+~/venv-docs/bin/python documentacao/analise/estatistica/gerar_apendice_latex.py
+~/venv-docs/bin/python documentacao/analise/estatistica/gerar_csv_resultados.py
+~/venv-docs/bin/python documentacao/analise/documentos/gerar_prompts_txt.py
+~/venv-docs/bin/python documentacao/analise/documentos/gerar_pdfs_drive.py
+~/venv-docs/bin/python documentacao/analise/figuras/figura_processo.py
 ```
 
 O PNG da figura é feito a partir do PDF, a 300 dpi:
@@ -79,12 +87,12 @@ O PNG da figura é feito a partir do PDF, a 300 dpi:
 ~/venv-docs/bin/python -c "import pypdfium2 as p; p.PdfDocument('documentacao/figuras/processo_trabalho.pdf')[0].render(scale=300/72).to_pil().save('documentacao/figuras/processo_trabalho.png')"
 ```
 
-Sem argumento, cada script grava no lugar indicado na tabela. Os geradores dos resultados e do
-apêndice conferem os números do TCC com `assert` e param se a planilha mudar. O do posto médio
-imprime os postos no terminal para conferir.
+Sem argumento, cada script grava no lugar indicado na tabela. Os geradores dos resultados, do CSV
+e do apêndice conferem os números do TCC com `assert` e param se a planilha mudar. O do posto
+médio imprime os postos no terminal para conferir.
 
-Em 19/11/2026 os cinco geradores e o comando do PNG foram rodados numa cópia limpa do repositório,
-com `reportlab` 5.1.0. Os PDFs, o apêndice e o PNG saíram com o mesmo conteúdo dos arquivos do git.
+Em 21/11/2026, depois da reorganização das pastas, todos os geradores e o `validar_bancada.py`
+foram rodados de novo a partir dos lugares novos e funcionaram.
 
 ## O que saiu (18/11/2026)
 

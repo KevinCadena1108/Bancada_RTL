@@ -9,7 +9,7 @@ Conwaylife (case sobre a soma de vizinhos, não é FSM) e não via as FSMs com `
 wbuart32). O P_FSM do ICV usa outra detecção e continua valendo.
 Os dados vêm de PLANILHA_R1/R2 (pdf_comum.py) e de coberturas.json — os mesmos da planilha do
 experimento. Usa booktabs (já carregado no preâmbulo do TCC).
-Uso (WSL): python gerar_apendice_latex.py [saida.tex]   (padrão: documentacao/apendice_resultados.tex)
+Uso (WSL): python gerar_apendice_latex.py [saida.tex]   (padrão: documentacao/apendices/apendice_resultados.tex)
 """
 import json
 import os
@@ -19,7 +19,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 from pdf_comum import CIRCUITOS, MODELOS, RODADAS  # noqa: E402
 
-SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(AQUI, "..", "..", "documentacao",
+SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(AQUI, "..", "..", "apendices",
                                                            "apendice_resultados.tex")
 COB = json.load(open(os.path.join(AQUI, "coberturas.json"), encoding="utf-8"))
 NOME_MODELO = {MODELOS[0]: "GPT-5.6 Luna", MODELOS[1]: "Gemini 3.5 Flash-Lite"}
@@ -106,7 +106,7 @@ def rotulo(c):
 
 L = []
 w = L.append
-w("% Gerado por analise/estatistica/gerar_apendice_latex.py a partir da planilha do experimento.")
+w("% Gerado por documentacao/analise/estatistica/gerar_apendice_latex.py a partir da planilha do experimento.")
 w("% Não editar à mão: rode o script de novo se a planilha mudar.")
 w("")
 w("\\section{Resultados detalhados}")

@@ -1,6 +1,6 @@
 # Validação da Bancada RTL: ferramenta × execução manual
 
-Gerado por `analise/validacao/validar_bancada.py` em 06/11/2026. Valores da bancada; a última coluna diz se a execução manual deu o mesmo resultado (aprovação, cada tipo de cobertura e o destino de cada mutante). — = métrica sem pontos no circuito.
+Gerado por `documentacao/analise/validacao/validar_bancada.py` em 21/11/2026. Valores da bancada; a última coluna diz se a execução manual deu o mesmo resultado (aprovação, cada tipo de cobertura e o destino de cada mutante). — = métrica sem pontos no circuito.
 
 | Circuito | Passou | Linha | Desvio | Alternância | FSM | Mutantes mortos | Manual |
 |---|---|---|---|---|---|---|---|

@@ -227,11 +227,11 @@ def tabela(cab, linhas, larguras, destacar_ultima=False, primeira_esq=True, cor_
 
 
 DOC = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
-                                    "documentacao"))
+                                    "resultados"))
 
 
 def saida(nome):
-    """Caminho do PDF: o argumento da linha de comando, ou documentacao/<nome> na raiz do repo."""
+    """Caminho do PDF: o argumento da linha de comando, ou documentacao/resultados/<nome>."""
     return sys.argv[1] if len(sys.argv) > 1 else os.path.join(DOC, nome)
 
 

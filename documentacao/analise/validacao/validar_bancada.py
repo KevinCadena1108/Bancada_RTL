@@ -11,7 +11,7 @@ Compara aprovação, cobertura por tipo e o destino de cada mutante, e grava a t
 documentacao/validacao/resultado.md. Termina com erro se alguma coisa não bater.
 
 Uso (WSL, com o venv da bancada, que tem o flask):
-  ~/veriweb/venv/bin/python analise/validacao/validar_bancada.py
+  ~/veriweb/venv/bin/python documentacao/analise/validacao/validar_bancada.py
 """
 import os
 import shutil
@@ -21,10 +21,10 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[2]
-PARES = RAIZ / "documentacao" / "validacao" / "pares"
-SAIDA = RAIZ / "documentacao" / "validacao" / "resultado.md"
-sys.path.insert(0, str(RAIZ))
+DOC = Path(__file__).resolve().parents[2]          # documentacao/
+PARES = DOC / "validacao" / "pares"
+SAIDA = DOC / "validacao" / "resultado.md"
+sys.path.insert(0, str(DOC.parent / "api"))        # app.py da bancada
 os.environ["GSHEET_WEBHOOK"] = ""
 import app  # noqa: E402
 
@@ -140,7 +140,7 @@ for caso, titulo in CASOS:
 
 SAIDA.write_text(
     "# Validação da Bancada RTL: ferramenta × execução manual\n\n"
-    f"Gerado por `analise/validacao/validar_bancada.py` em {date.today():%d/%m/%Y}. "
+    f"Gerado por `documentacao/analise/validacao/validar_bancada.py` em {date.today():%d/%m/%Y}. "
     "Valores da bancada; a última coluna diz se a execução manual deu o mesmo resultado "
     "(aprovação, cada tipo de cobertura e o destino de cada mutante). "
     "— = métrica sem pontos no circuito.\n\n"

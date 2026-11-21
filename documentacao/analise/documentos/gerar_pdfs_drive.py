@@ -3,7 +3,7 @@
 Gera os PDFs explicativos da pasta "Documentação" do Google Drive.
 
 Uso (no WSL, com reportlab):
-    python3 analise/documentos/gerar_pdfs_drive.py [pasta_de_saida]
+    python3 documentacao/analise/documentos/gerar_pdfs_drive.py [pasta_de_saida]
 
 Saída padrão: documentacao/drive/. Os módulos, testbenches e trechos do
 coverage.dat das provas ficam em documentacao/drive/fontes/ e vêm de execução
@@ -26,13 +26,13 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (CondPageBreak, KeepTogether, Paragraph, SimpleDocTemplate,
                                 Spacer, Table, TableStyle, XPreformatted)
 
-RAIZ = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+RAIZ = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 FONTES = os.path.join(RAIZ, "documentacao", "drive", "fontes")
 SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "documentacao", "drive")
 REVISAO = "Revisado em 18 nov. 2026."
 
 # --------------------------------------------------------------------------
-# Estilo (o mesmo dos outros PDFs do projeto: analise/estatistica/pdf_comum.py)
+# Estilo (o mesmo dos outros PDFs do projeto: documentacao/analise/estatistica/pdf_comum.py)
 # --------------------------------------------------------------------------
 FD = "/usr/share/fonts/truetype/dejavu/"
 pdfmetrics.registerFont(TTFont("DV", FD + "DejaVuSans.ttf"))
@@ -596,17 +596,18 @@ def doc_visao_geral():
           "fica em " + c("avaliacoes/<data>_<módulo>_<estratégia>/") + "."),
         H1("4. Como o código está organizado"),
         tabela(["Arquivo", "Papel"],
-               [[c("app.py"), "backend Flask: compilar, medir cobertura, mutar, calcular o ICV e "
-                 "registrar"],
-                [c("templates/index.html"), "a página: campos de RTL e testbench, botão Avaliar e "
-                 "os painéis"],
-                [c("sim/main.cpp"), "harness C++: laço de tempo da simulação e gravação da "
+               [[c("api/app.py"), "backend Flask: compilar, medir cobertura, mutar, calcular o ICV "
+                 "e registrar"],
+                [c("api/templates/index.html"), "a página: campos de RTL e testbench, botão "
+                 "Avaliar e os painéis"],
+                [c("api/sim/main.cpp"), "harness C++: laço de tempo da simulação e gravação da "
                  "cobertura, inclusive quando o testbench encerra com $fatal"],
-                [c("planilha/doPost.gs"), "script do Google Planilhas que recebe cada avaliação"],
-                [c("analise/"), "scripts das tabelas, estatísticas, figuras e PDFs"],
-                [c("documentacao/"), "apêndices do TCC, figuras e PDFs explicativos"],
-                [c("requirements.txt"), "dependência do Python (Flask)"],
-                [c("start.sh"), "sobe o servidor (cria o ambiente, instala e roda o app.py)"]],
+                [c("api/planilha/doPost.gs"), "script do Google Planilhas que recebe cada "
+                 "avaliação"],
+                [c("api/requirements.txt"), "dependência do Python (Flask)"],
+                [c("api/start.sh"), "sobe o servidor (cria o ambiente, instala e roda o app.py)"],
+                [c("documentacao/"), "módulos, prompts, resultados, apêndices do TCC, figuras, "
+                 "validação e os scripts de análise"]],
                [45 * mm, 129 * mm]),
         H1("5. O caminho de uma avaliação (rota /avaliar)"),
         num(1, "Recebe o JSON com o RTL, o testbench, o nome do módulo e a estratégia. Confere "

@@ -29,10 +29,10 @@ e valeu o primeiro testbench gerado. Todos os prompts pediram os mesmos requisit
 
 Materiais para reproduzir o experimento:
 
-- [`modulos/`](modulos/README.md): os 10 módulos RTL, como foram usados;
-- [`prompts/`](prompts/README.md): os 6 prompts, com `[MÓDULO]` no lugar do código;
-- [`resultados/`](resultados/README.md): o resultado de cada um dos 240 testbenches (CSV);
-- esta bancada, para avaliar novos testbenches com as mesmas medidas.
+- [`documentacao/modulos/`](documentacao/modulos/README.md): os 10 módulos RTL, como foram usados;
+- [`documentacao/prompts/`](documentacao/prompts/README.md): os 6 prompts, com `[MÓDULO]` no lugar do código;
+- [`documentacao/resultados/`](documentacao/resultados/README.md): o resultado de cada um dos 240 testbenches (CSV);
+- a própria bancada, em [`api/`](api/), para avaliar novos testbenches com as mesmas medidas.
 
 A análise é descritiva. Ela usa quatro medidas.
 
@@ -61,12 +61,13 @@ Principais resultados:
   (51,6%). A cobertura sozinha não basta para avaliar um testbench.
 
 O cálculo de cada número está em
-[`documentacao/resultados_explicados.pdf`](documentacao/resultados_explicados.pdf).
+[`documentacao/resultados/resultados_explicados.pdf`](documentacao/resultados/resultados_explicados.pdf).
 
 ## Rodar
 
-Use o **WSL/Linux**, numa pasta do Linux (por exemplo, `~/veriweb`). Nunca rode em `/mnt/c`, porque
-o Verilator não compila lá.
+O código da bancada fica na pasta [`api/`](api/). Use o **WSL/Linux**, numa pasta do Linux (por
+exemplo, `~/veriweb`). Nunca rode em `/mnt/c`, porque o Verilator não compila lá. Copie para essa
+pasta o conteúdo de `api/` (`app.py`, `requirements.txt`, `start.sh`, `sim/` e `templates/`).
 
 Pré-requisitos:
 
@@ -205,7 +206,7 @@ tabela de resultado estão em [`documentacao/validacao/`](documentacao/validacao
 links para as provas em PDF. Para refazer, rode no WSL, na raiz do repositório:
 
 ```bash
-~/veriweb/venv/bin/python analise/validacao/validar_bancada.py
+~/veriweb/venv/bin/python documentacao/analise/validacao/validar_bancada.py
 ```
 
 ## Histórico e avaliações salvas
@@ -235,7 +236,7 @@ preenche a matriz com um bloco por módulo, as métricas nas linhas e as estrat�
 - As linhas que não chegaram por falha de rede ou timeout ficam em **`envios_pendentes.jsonl`**,
   para reenviar. O `historico.csv` sempre grava tudo.
 - O Apps Script roda **no Google**. A versão em uso está copiada em
-  [`planilha/doPost.gs`](planilha/doPost.gs). Ele acha o bloco pelo nome em qualquer coluna. A 2ª
+  [`api/planilha/doPost.gs`](api/planilha/doPost.gs). Ele acha o bloco pelo nome em qualquer coluna. A 2ª
   rodada fica ao lado da 1ª, com nomes terminados em "2". Os blocos da coluna A (1ª rodada) ficam
   travados. Ele separa "Não compilou", "Timeout" e "Não passou".
 - Depois de colar uma versão nova no editor do Apps Script, atualize a implantação existente
@@ -265,28 +266,30 @@ isso a tela mostra os 4 componentes, para conferência.
 
 **Um par por vez.** A página avalia um par RTL + testbench por vez. As funções
 `compilar_e_cobrir`, `testar_mutacao` e `calcular_icv` não dependem do Flask e podem ser usadas num
-script de linha de comando, como faz o `analise/validacao/validar_bancada.py`.
+script de linha de comando, como faz o `documentacao/analise/validacao/validar_bancada.py`.
 
 ## Estrutura
 
 ```
-veriweb/
-├── app.py                backend Flask (toda a lógica)
-├── sim/main.cpp          harness C++ (loop de tempo e gravação da cobertura)
-├── templates/index.html  a página
-├── requirements.txt
-├── start.sh              sobe o servidor
-├── planilha/doPost.gs    cópia do Apps Script que grava na planilha do experimento
-├── modulos/              os 10 módulos RTL do experimento
-├── prompts/              os 6 prompts, um por estratégia
-├── resultados/           resultado de cada um dos 240 testbenches (CSV)
-├── analise/              scripts que geram os PDFs, a figura e o apêndice do TCC
-│   ├── estatistica/      dados da planilha (pdf_comum.py, coberturas.json) e geradores
-│   ├── documentos/       gerador dos PDFs da pasta "Documentação" do Google Drive
-│   ├── figuras/          gerador da figura do processo do trabalho
-│   └── validacao/        validar_bancada.py, bancada × Verilator à mão
-└── documentacao/         apêndices LaTeX, figura, PDFs e validação (ver o README da pasta)
+Bancada_RTL/
+├── api/                     código da Bancada RTL
+│   ├── app.py               backend Flask (toda a lógica)
+│   ├── sim/main.cpp         harness C++ (loop de tempo e gravação da cobertura)
+│   ├── templates/index.html a página
+│   ├── requirements.txt
+│   ├── start.sh             sobe o servidor
+│   └── planilha/doPost.gs   cópia do Apps Script que grava na planilha do experimento
+├── documentacao/            tudo do TCC (ver o README da pasta)
+│   ├── modulos/             os 10 módulos RTL do experimento
+│   ├── prompts/             os 6 prompts, um por estratégia
+│   ├── resultados/          os 240 testbenches (CSV) e os PDFs que explicam os resultados
+│   ├── apendices/           apêndices A e B do TCC em LaTeX
+│   ├── figuras/             figura do processo e capturas da tela da bancada
+│   ├── validacao/           validação da bancada (5 pares e resultado)
+│   ├── drive/               PDFs explicativos da pasta "Documentação" do Google Drive
+│   └── analise/             scripts que geram os arquivos acima e os dados da planilha
+└── README.md
 ```
 
-Ficam fora do git, só no WSL, os arquivos `webhook.env`, `historico.csv` e
+Ficam fora do git, só na cópia da bancada no WSL, os arquivos `webhook.env`, `historico.csv` e
 `envios_pendentes.jsonl` e a pasta `avaliacoes/`.

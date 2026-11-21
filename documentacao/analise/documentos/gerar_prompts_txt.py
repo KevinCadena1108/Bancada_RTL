@@ -1,17 +1,17 @@
-"""Monta os 6 prompts do experimento em texto puro, a partir de documentacao/apendice_prompts.tex.
+"""Monta os 6 prompts do experimento em texto puro, a partir de documentacao/apendices/apendice_prompts.tex.
 
 O apêndice traz cada trecho uma única vez (solicitação, papel de especialista, exemplos,
 planejamento, módulo e requisitos). Este script junta os trechos na ordem descrita em
-"Composição das estratégias" e grava prompts/<estrategia>.txt. [MÓDULO] é o lugar onde o código
+"Composição das estratégias" e grava documentacao/prompts/<estrategia>.txt. [MÓDULO] é o lugar onde o código
 RTL completo do módulo foi colado em cada geração.
 
-Uso: python3 analise/documentos/gerar_prompts_txt.py
+Uso: python3 documentacao/analise/documentos/gerar_prompts_txt.py
 """
 import os
 import re
 
-RAIZ = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-tex = open(os.path.join(RAIZ, "documentacao", "apendice_prompts.tex"), encoding="utf-8").read()
+DOC = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+tex = open(os.path.join(DOC, "apendices", "apendice_prompts.tex"), encoding="utf-8").read()
 blocos = [b.strip("\n") for b in re.findall(r"\\begin\{verbatim\}\n(.*?)\\end\{verbatim\}", tex, re.S)]
 assert len(blocos) == 10, len(blocos)
 ZS, ESP_ZS, FS_PEDIDO, ESP, INTRO_EX, EX1, EX2, PLAN, MODULO, REQ = blocos
@@ -29,7 +29,7 @@ PROMPTS = {
     "5_planning_zero_shot": [PLAN, MODULO, REQ],
     "6_planning_few_shot": [EXEMPLOS, PLAN, MODULO, REQ],
 }
-saida = os.path.join(RAIZ, "prompts")
+saida = os.path.join(DOC, "prompts")
 os.makedirs(saida, exist_ok=True)
 for nome, partes in PROMPTS.items():
     with open(os.path.join(saida, nome + ".txt"), "w", encoding="utf-8", newline="\n") as f:

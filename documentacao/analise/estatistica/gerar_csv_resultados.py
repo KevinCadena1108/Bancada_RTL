@@ -1,11 +1,11 @@
-"""Grava resultados/resultados_testbenches.csv: uma linha por testbench do experimento (240).
+"""Grava documentacao/resultados/resultados_testbenches.csv: uma linha por testbench do experimento (240).
 
 Os dados são os mesmos da planilha do experimento, já copiados no repositório: a linha
 "Mutantes" de cada bloco em PLANILHA_R1/R2 (pdf_comum.py) e as coberturas em coberturas.json
 (conferidos célula a célula contra a planilha em 15/11/2026, zero diferenças).
 
 O CSV usa ponto e vírgula como separador e vírgula decimal, para abrir direto no Excel em
-português. Uso: python3 analise/estatistica/gerar_csv_resultados.py
+português. Uso: python3 documentacao/analise/estatistica/gerar_csv_resultados.py
 """
 import csv
 import json
@@ -49,9 +49,9 @@ assert len(linhas) == 240
 assert sum(l["resultado"] == "aprovado" for l in linhas) == 175
 assert sum(l["mutantes_detectados"] for l in linhas) == 519
 
-raiz = os.path.normpath(os.path.join(AQUI, "..", ".."))
-os.makedirs(os.path.join(raiz, "resultados"), exist_ok=True)
-caminho = os.path.join(raiz, "resultados", "resultados_testbenches.csv")
+doc = os.path.normpath(os.path.join(AQUI, "..", ".."))
+os.makedirs(os.path.join(doc, "resultados"), exist_ok=True)
+caminho = os.path.join(doc, "resultados", "resultados_testbenches.csv")
 with open(caminho, "w", encoding="utf-8-sig", newline="") as f:
     w = csv.DictWriter(f, fieldnames=list(linhas[0]), delimiter=";")
     w.writeheader()

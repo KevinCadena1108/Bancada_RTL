@@ -4,7 +4,7 @@
 Os dados vêm do pdf_comum.py (PLANILHA_R1 e PLANILHA_R2), o mesmo lugar dos outros PDFs; o valor
 analisado é a média das 2 rodadas. Os postos médios são os mesmos da seção Resultados do TCC
 (3,675 e 3,625 aparecem com 3 casas porque são exatos).
-Uso: python gera_pdf_posto.py [saida.pdf]   (padrão: documentacao/posto_medio_passo_a_passo.pdf)
+Uso: python gera_pdf_posto.py [saida.pdf]   (padrão: documentacao/resultados/posto_medio_passo_a_passo.pdf)
 """
 import os
 import sys
@@ -258,7 +258,7 @@ st(P("5. Como os resultados foram obtidos", H1))
 st(B("Os valores vêm da planilha do experimento (linha “Mutantes” de cada circuito), nas 2 rodadas."))
 st(B("Para cada circuito calcula-se a média das 2 rodadas, os postos (passos 2 e 3) e, ao final, o "
      "posto médio."))
-st(B("O cálculo é reproduzível por script (analise/estatistica/gera_pdf_posto.py), e os postos "
+st(B("O cálculo é reproduzível por script (documentacao/analise/estatistica/gera_pdf_posto.py), e os postos "
      "médios são os mesmos da seção Resultados do TCC."))
 
 # 6. interpretação

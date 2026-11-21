@@ -1,7 +1,7 @@
 # Prompts do experimento
 
 Os 6 prompts usados para gerar os *testbenches*, um arquivo por estratégia. Em cada geração,
-`[MÓDULO]` foi substituído pelo código completo do módulo avaliado (pasta `modulos/`), e cada
+`[MÓDULO]` foi substituído pelo código completo do módulo avaliado (pasta `documentacao/modulos/`), e cada
 prompt foi enviado em uma sessão nova do LLM. Foi considerado o primeiro *testbench* gerado, sem
 correções manuais.
 
@@ -18,6 +18,6 @@ Os exemplos das estratégias *Few-shot* são um comparador de 4 bits (circuito c
 registrador de deslocamento de 4 bits (sequencial), elaborados para o trabalho. Os requisitos são
 os mesmos nos 6 prompts.
 
-Os arquivos são gerados a partir do Apêndice A do TCC (`documentacao/apendice_prompts.tex`) por
-`analise/documentos/gerar_prompts_txt.py`. O texto é o mesmo enviado aos LLMs; só as quebras de
+Os arquivos são gerados a partir do Apêndice A do TCC (`documentacao/apendices/apendice_prompts.tex`) por
+`documentacao/analise/documentos/gerar_prompts_txt.py`. O texto é o mesmo enviado aos LLMs; só as quebras de
 linha podem diferir do original.

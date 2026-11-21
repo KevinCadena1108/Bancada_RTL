@@ -22,6 +22,6 @@ como "Cout Clock".
 
 **Conferência (21/11/2026):** os arquivos vieram da pasta "Modulos" do Google Drive do autor. O ICV
 que a Bancada RTL calcula para cada um (linhas, estados, portas e ICV) é igual ao da Tabela do
-ICV no Apêndice B do TCC (`documentacao/apendice_resultados.tex`), e todos passam no
+ICV no Apêndice B do TCC (`documentacao/apendices/apendice_resultados.tex`), e todos passam no
 `verilator --lint-only`. O CORDIC tem um mutante equivalente (dentro de um `` `ifdef ``
 desligado), que nenhum *testbench* consegue detectar.
