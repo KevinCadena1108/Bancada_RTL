@@ -17,6 +17,18 @@ início do arquivo).
 | `spi_master.v` | SPI Master | OpenCores | mestre de comunicação SPI | 2,4 | Muito Alta |
 | `wbuart32_txuartlite.v` | wbuart32 | OpenCores | transmissor UART (`txuartlite`) | 2,5 | Muito Alta |
 
+Ajustes para o Verilator (só sintaxe, sem mudar o comportamento): no Conwaylife, `q` passou a ser
+`output reg`, `++i` virou `i = i + 1` e as atribuições `<=` do bloco combinacional viraram `=`; no
+Fancytimer, `count` passou a ser `output reg`.
+
+Projetos do OpenCores (situação na página de cada projeto, conferida em 21/11/2026):
+
+| Módulo | Projeto | Situação no OpenCores |
+|---|---|---|
+| CORDIC | [verilog_cordic_core](https://opencores.org/projects/verilog_cordic_core) ("configurable cordic core in verilog") | sem status de desenvolvimento; a página diz "Tested in hardware" |
+| SPI Master | [spi_verilog_master_slave](https://opencores.org/projects/spi_verilog_master_slave) ("SPI Verilog Master & Slave modules") | Beta |
+| wbuart32 | [wbuart32](https://opencores.org/projects/wbuart32) ("Another Wishbone Controlled UART") | Stable |
+
 Na planilha do experimento, o SPI Master aparece com o nome antigo "I2C Slave" e o Count clock
 como "Cout Clock".
 

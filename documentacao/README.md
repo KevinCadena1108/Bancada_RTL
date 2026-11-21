@@ -21,7 +21,7 @@ testbenches), copiada em `analise/estatistica/pdf_comum.py` (mutantes) e
 | `resultados/posto_medio_passo_a_passo.pdf` | o posto médio explicado, com a fonte da fórmula e os resultados de cada estratégia | `analise/estatistica/gera_pdf_posto.py` |
 | `apendices/apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
 | `apendices/apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados, cálculo do ICV e uma tabela de resultados por módulo | `analise/estatistica/gerar_apendice_latex.py` |
-| `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`) e capturas da tela da bancada (`bancada_rtl_*`) | `analise/figuras/figura_processo.py` (processo) |
+| `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`), capturas da tela da bancada (`bancada_rtl_*`) e os gráficos dos Resultados (`grafico_*`) | `analise/figuras/figura_processo.py` (processo) |
 | `drive/` | os 8 PDFs explicativos da pasta "Documentação" do Google Drive (ver abaixo) | `analise/documentos/gerar_pdfs_drive.py` |
 | [`validacao/`](validacao/README.md) | validação da Bancada RTL, ferramenta × Verilator à mão | `analise/validacao/validar_bancada.py` |
 | `analise/` | os scripts acima e os dados da planilha | — |
@@ -54,16 +54,23 @@ aqui. A versão em Word da comparação está em `validacao/comparacao_api_manua
 
 ## Conferência com o TCC
 
-Em 19/11/2026 a documentação foi comparada com o PDF do TCC II (21 páginas).
+Em 21/11/2026 a documentação foi comparada de novo com o PDF do TCC II (24 páginas).
 
-- Os dois apêndices em LaTeX estão iguais aos do TCC. Nas 10 tabelas de módulos e na tabela do ICV,
-  todos os valores foram comparados um a um.
-- `resultados_explicados.pdf` usa os mesmos números das Tabelas 3, 4 e 5 do TCC, com uma casa
-  decimal. O gerador confere esses números com `assert`.
+- Os dois apêndices em LaTeX estão iguais aos do TCC. As 10 tabelas de resultados do Apêndice B
+  (960 valores) foram conferidas por script contra `analise/estatistica/pdf_comum.py` e
+  `coberturas.json`, sem nenhuma diferença. A Tabela 6 (ICV) também confere com os arquivos de
+  `modulos/`.
+- `resultados/resultados_explicados.pdf` usa os mesmos números das Tabelas 3 e 4 e da Figura 4 do
+  TCC, com uma casa decimal. O gerador confere esses números com `assert`.
 - A Tabela 2 do TCC (validação) é a soma dos pontos de linha, desvio e alternância de
   `validacao/resultado.md`.
-- A figura do processo deste repositório é mais nova que a do PDF do TCC. A do repositório não fala
-  em classes de ICV.
+- Figuras do TCC: a Figura 1 é `figuras/processo_trabalho.png`; a Figura 2 é
+  `figuras/bancada_rtl_completa.png`; as Figuras 3 e 4 são `figuras/grafico_exemplos.png` e
+  `figuras/grafico_cobertura100.png` (feitas fora do repositório, sem script gerador).
+- **Valor suspeito:** no Apêndice B, Count clock, GPT, rodada 1, *Few-shot*, desvio = 65,5%. O
+  desvio desse módulo só pode ser múltiplo de 12,5% (todos os outros valores são), então deve ser
+  erro de digitação na planilha (provavelmente 62,5%). Conferir no `historico.csv` do PC do
+  trabalho, que tem as avaliações da 1ª rodada.
 
 ## Como gerar de novo
 
