@@ -271,7 +271,6 @@ veriweb/
 ├── requirements.txt
 ├── start.sh              sobe o servidor
 ├── planilha/doPost.gs    cópia do Apps Script que grava na planilha do experimento
-├── exemplos/             pares RTL + testbench para testar a bancada (ver o README da pasta)
 ├── analise/              scripts que geram os PDFs, a figura e o apêndice do TCC
 │   ├── estatistica/      dados da planilha (pdf_comum.py, coberturas.json) e geradores
 │   ├── documentos/       gerador dos PDFs da pasta "Documentação" do Google Drive

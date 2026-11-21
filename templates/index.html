@@ -20,7 +20,8 @@
     --mono: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
   }
 
-  * { box-sizing: border-box; }
+  /* sem ligaduras: "<=" e "!=" aparecem como no codigo, e nao como "≤" e "≠" */
+  * { box-sizing: border-box; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
 
   html, body { margin: 0; min-height: 100%; }
 
@@ -753,7 +754,8 @@ function render(d) {
     $("mut-unit").textContent = m.mortos + " mortos / " + m.total;
     $("mutn-val").textContent = m.total;
     $("mutn-val").className = "value";
-    $("mutn-unit").textContent = m.aviso || (m.sobreviventes + " sobreviveram");
+    $("mutn-unit").textContent = m.aviso ||
+      (m.sobreviventes === 1 ? "1 sobreviveu" : m.sobreviventes + " sobreviveram");
 
     // lista detalhada: o que foi trocado e o veredito
     const list = $("mut-list");
