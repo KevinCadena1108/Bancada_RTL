@@ -38,7 +38,7 @@ A análise é descritiva. Ela usa quatro medidas.
 
 - **Taxa de aprovação.** Quantos testbenches passaram no módulo correto.
 - **Score efetivo.** Quantas falhas foram detectadas, de todas as possíveis. Cada testbench enfrenta
-  4 mutantes, então são 960 falhas. Um testbench que não compilou, não passou ou travou detecta 0.
+  4 mutantes, então são 960 mutantes considerados. Um testbench que não compilou, não passou ou travou detecta 0.
 - **Posto médio.** Em cada módulo e em cada LLM, as 6 estratégias são ordenadas pelas falhas
   detectadas, com a média das duas rodadas. A melhor recebe posto 6 e a pior, posto 1. Estratégias
   empatadas dividem o posto. O posto médio é a média desses postos. Quanto maior, melhor.
@@ -48,7 +48,7 @@ Principais resultados:
 
 - 175 dos 240 testbenches passaram (72,9%). O Gemini teve mais aprovados (95 contra 80), mas o GPT
   teve score efetivo maior (57,9% contra 50,2%).
-- O score efetivo geral foi 54,1% (519 de 960 falhas). O maior foi o da Planning Few-shot (66,9%) e
+- O score efetivo geral foi 54,1% (519 de 960 mutantes). O maior foi o da Planning Few-shot (66,9%) e
   o menor, o da Zero-shot (38,1%).
 - As estratégias com exemplos (Few-shot) detectaram 61,0% das falhas. As sem exemplos detectaram
   47,1%.

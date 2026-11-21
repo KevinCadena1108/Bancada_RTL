@@ -166,9 +166,12 @@ w("    \\bottomrule")
 w("  \\end{tabular}")
 w("")
 w("  \\smallskip")
-w("  {\\footnotesize Entre parênteses, a pontuação de cada componente. Estados: número de estados "
-  "identificado pela Bancada RTL; -- indica módulo sem máquina de estados. Lógica: A = "
-  "aritmética, D = deslocamento, P = estruturas replicadas. "
+w("  {\\footnotesize Entre parênteses, a pontuação de cada componente. Linhas, sem comentários e "
+  "linhas em branco: até 30 = 1, até 100 = 2 e acima de 100 = 3. Estados, número identificado "
+  "pela Bancada RTL (-- indica módulo sem máquina de estados): até 1 = 0, até 4 = 1, até 9 = 2 e "
+  "acima de 9 = 3. Portas de entrada e saída: até 4 = 1, até 10 = 2 e acima de 10 = 3. Lógica: "
+  "A = aritmética (1 ponto), D = deslocamento (2 pontos) e P = estruturas replicadas (2 pontos), "
+  "com no máximo 3 pontos. "
   "$\\mathrm{ICV} = 0{,}30P_{\\mathrm{LOC}} + 0{,}30P_{\\mathrm{FSM}} + 0{,}20P_{\\mathrm{IO}} + "
   "0{,}20P_{\\mathrm{LOG}}$.}")
 w("\\end{table}")
