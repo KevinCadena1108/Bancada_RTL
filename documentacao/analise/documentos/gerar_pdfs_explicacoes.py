@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Gera os PDFs explicativos da pasta "Documentação" do Google Drive.
+Gera os PDFs explicativos (os mesmos da pasta "Documentação" do Google Drive).
 
 Uso (no WSL, com reportlab):
-    python3 documentacao/analise/documentos/gerar_pdfs_drive.py [pasta_de_saida]
+    python3 documentacao/analise/documentos/gerar_pdfs_explicacoes.py [pasta_de_saida]
 
-Saída padrão: documentacao/drive/. Os módulos, testbenches e trechos do
-coverage.dat das provas ficam em documentacao/drive/fontes/ e vêm de execução
+Saída padrão: documentacao/explicacoes/. Os módulos, testbenches e trechos do
+coverage.dat das provas ficam em documentacao/explicacoes/fontes/ e vêm de execução
 real (Verilator 5.032), conferida de novo em 18/11/2026.
 
 Código em bloco usa XPreformatted com o texto escapado UMA vez: assim "<=" e
@@ -27,8 +27,8 @@ from reportlab.platypus import (CondPageBreak, KeepTogether, Paragraph, SimpleDo
                                 Spacer, Table, TableStyle, XPreformatted)
 
 RAIZ = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
-FONTES = os.path.join(RAIZ, "documentacao", "drive", "fontes")
-SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "documentacao", "drive")
+FONTES = os.path.join(RAIZ, "documentacao", "explicacoes", "fontes")
+SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "documentacao", "explicacoes")
 REVISAO = "Revisado em 18 nov. 2026."
 
 # --------------------------------------------------------------------------

@@ -22,11 +22,11 @@ testbenches), copiada em `analise/estatistica/pdf_comum.py` (mutantes) e
 | `apendices/apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
 | `apendices/apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados, cálculo do ICV, uma tabela de resultados por módulo e as posições usadas no posto médio | `analise/estatistica/gerar_apendice_latex.py` |
 | `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`), capturas da tela da bancada (`bancada_rtl_*`) e os gráficos dos Resultados (`grafico_*`) | `analise/figuras/figura_processo.py` (processo) |
-| `drive/` | os 8 PDFs explicativos da pasta "Documentação" do Google Drive (ver abaixo) | `analise/documentos/gerar_pdfs_drive.py` |
+| `explicacoes/` | os 8 PDFs que explicam o trabalho, a bancada e as métricas, os mesmos da pasta "Documentação" do Google Drive (ver abaixo) | `analise/documentos/gerar_pdfs_explicacoes.py` |
 | [`validacao/`](validacao/README.md) | validação da Bancada RTL, ferramenta × Verilator à mão | `analise/validacao/validar_bancada.py` |
 | `analise/` | os scripts acima e os dados da planilha | — |
 
-## Pasta `drive/`
+## Pasta `explicacoes/`
 
 Cópia dos PDFs da pasta "Documentação" do Google Drive (Meu Drive › TCC › Documentação). Foram
 refeitos em 18/11/2026 e enviados ao Drive como nova versão de cada arquivo, então os links
@@ -43,7 +43,7 @@ continuam os mesmos.
 | `prova_fsm_completo.pdf` | detector de "101": resultado da bancada ligado a cada ponto do `coverage.dat` (rastreabilidade) |
 | `script_teste_manual_comentado.pdf` | o script de verificação manual explicado parte por parte, com os mesmos números da bancada |
 
-`drive/fontes/` guarda os módulos, testbenches e trechos de `coverage.dat` usados nas provas,
+`explicacoes/fontes/` guarda os módulos, testbenches e trechos de `coverage.dat` usados nas provas,
 todos de execução real no Verilator 5.032.
 
 A pasta do Drive também tem `resultados_explicados.pdf` e `posto_medio_passo_a_passo.pdf`, enviados
@@ -85,7 +85,7 @@ python3 -m venv ~/venv-docs && ~/venv-docs/bin/pip install reportlab pypdfium2
 ~/venv-docs/bin/python documentacao/analise/estatistica/gerar_apendice_latex.py
 ~/venv-docs/bin/python documentacao/analise/estatistica/gerar_csv_resultados.py
 ~/venv-docs/bin/python documentacao/analise/documentos/gerar_prompts_txt.py
-~/venv-docs/bin/python documentacao/analise/documentos/gerar_pdfs_drive.py
+~/venv-docs/bin/python documentacao/analise/documentos/gerar_pdfs_explicacoes.py
 ~/venv-docs/bin/python documentacao/analise/figuras/figura_processo.py
 ```
 

@@ -299,7 +299,7 @@ Bancada_RTL/
 │   ├── apendices/           apêndices A e B do TCC em LaTeX
 │   ├── figuras/             figura do processo e capturas da tela da bancada
 │   ├── validacao/           validação da bancada (5 pares e resultado)
-│   ├── drive/               PDFs explicativos da pasta "Documentação" do Google Drive
+│   ├── explicacoes/         PDFs que explicam o trabalho, a bancada e as métricas
 │   └── analise/             scripts que geram os arquivos acima e os dados da planilha
 └── README.md
 ```

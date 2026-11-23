@@ -12,11 +12,11 @@ Metodologia do TCC.
 | `pares/<caso>/dut.v` e `tb.v` | os 5 pares usados (módulo e testbench) |
 | `resultado.md` | tabela gerada pelo script de comparação (bancada × manual) |
 | `comparacao_api_manual.docx` | somador de 32 bits, temporizador (FSM com `case`) e Fancytimer (FSM com `if`): comandos manuais, saída do terminal e capturas de tela da API |
-| [`../drive/prova_cobertura.pdf`](../drive/prova_cobertura.pdf) | detector de "11": rota manual passo a passo (comandos, `coverage.dat` cru e comentado) |
-| [`../drive/prova_fsm_completo.pdf`](../drive/prova_fsm_completo.pdf) | detector de "101": resultado da API ligado ponto a ponto ao `coverage.dat` |
+| [`../explicacoes/prova_cobertura.pdf`](../explicacoes/prova_cobertura.pdf) | detector de "11": rota manual passo a passo (comandos, `coverage.dat` cru e comentado) |
+| [`../explicacoes/prova_fsm_completo.pdf`](../explicacoes/prova_fsm_completo.pdf) | detector de "101": resultado da API ligado ponto a ponto ao `coverage.dat` |
 
 Os documentos foram feitos pelo autor em 2026-11-06. Os dois PDFs foram refeitos em 2026-11-18 por
-`documentacao/analise/documentos/gerar_pdfs_drive.py` e ficam só em `documentacao/drive/` (antes havia uma cópia
+`documentacao/analise/documentos/gerar_pdfs_explicacoes.py` e ficam só em `documentacao/explicacoes/` (antes havia uma cópia
 idêntica aqui): o código agora mostra `<=` e `&&` (antes saía `&lt;=` e `&amp;&amp;`), a linha 12
 do detector de "11" é o bloco `always` (não o `assign`) e a cobertura de FSM saiu. Os números
 foram conferidos de novo no Verilator 5.032.
