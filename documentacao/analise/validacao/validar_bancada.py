@@ -10,8 +10,8 @@ Para cada par em documentacao/validacao/pares/<caso>/ (dut.v + tb.v):
 Compara aprovação, cobertura por tipo e o destino de cada mutante, e grava a tabela em
 documentacao/validacao/resultado.md. Termina com erro se alguma coisa não bater.
 
-Uso (WSL, com o venv da bancada, que tem o flask):
-  ~/veriweb/venv/bin/python documentacao/analise/validacao/validar_bancada.py
+Uso (Linux ou WSL, na raiz do repositório, com o venv criado pelo api/start.sh, que tem o flask):
+  api/venv/bin/python documentacao/analise/validacao/validar_bancada.py
 """
 import os
 import shutil

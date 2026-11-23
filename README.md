@@ -6,6 +6,8 @@ testbench passou, a cobertura de código, o teste de mutação e o **ICV**, um �
 do módulo. Funciona com qualquer módulo e qualquer testbench, desde que o módulo do testbench se
 chame `tb`.
 
+![Tela da Bancada RTL após a avaliação de um testbench](documentacao/figuras/bancada_rtl_tela.png)
+
 A bancada foi feita para o TCC "Avaliação de estratégias de engenharia de prompt na geração de
 testbenches para verificação de módulos RTL". O material do TCC está em
 [`documentacao/`](documentacao/README.md).
@@ -65,27 +67,37 @@ O cálculo de cada número está em
 
 ## Rodar
 
-O código da bancada fica na pasta [`api/`](api/). Use o **WSL/Linux**, numa pasta do Linux (por
-exemplo, `~/veriweb`). Nunca rode em `/mnt/c`, porque o Verilator não compila lá. Copie para essa
-pasta o conteúdo de `api/` (`app.py`, `requirements.txt`, `start.sh`, `sim/` e `templates/`).
+O código da bancada fica na pasta [`api/`](api/). A bancada roda no Linux ou no WSL. No WSL, clone
+o repositório numa pasta do Linux (por exemplo, `~`). Nunca rode em `/mnt/c`, porque o Verilator
+não compila lá.
 
-Pré-requisitos:
+O TCC usou o Verilator 5.032, que é a versão do `apt` no Ubuntu 26.04. Em versões mais antigas do
+Ubuntu, o `apt` instala outra versão. A bancada precisa de pelo menos o Verilator 5.0, porque usa
+`--timing`.
 
 ```bash
-sudo apt install verilator build-essential python3-venv
-verilator --version    # precisa ser 5.x
+sudo apt install verilator build-essential python3-venv git
+verilator --version    # o TCC usou 5.032
 ```
 
 Para subir a bancada:
 
 ```bash
-cd ~/veriweb
-chmod +x start.sh
-./start.sh
+git clone https://github.com/KevinCadena1108/Bancada_RTL.git ~/Bancada_RTL
+cd ~/Bancada_RTL/api
+bash start.sh
 ```
 
 Depois abra `http://127.0.0.1:5000` no navegador. A primeira execução cria um venv e instala o
-Flask. Nas próximas, basta rodar `./start.sh`.
+Flask. Nas próximas, basta rodar `bash start.sh` de novo.
+
+**Teste rápido.** Cole o conteúdo de
+[`documentacao/validacao/pares/detector11/dut.v`](documentacao/validacao/pares/detector11/dut.v) no
+campo do módulo e o de
+[`documentacao/validacao/pares/detector11/tb.v`](documentacao/validacao/pares/detector11/tb.v) no
+campo do testbench e clique em **Avaliar**. Com o Verilator 5.032, o testbench passa, com 4/5
+pontos de linha, 6/8 de desvio, 6/6 de alternância e 4 de 4 mutantes detectados. São os mesmos
+valores da validação em [`documentacao/validacao/resultado.md`](documentacao/validacao/resultado.md).
 
 ## Formato do testbench
 
@@ -203,10 +215,11 @@ ficaram com ICV entre 1,0 e 2,5, sendo 3 fáceis, 4 médios, 1 alto e 2 muito al
 A bancada foi conferida contra o Verilator usado à mão, por uma rota independente, em 5 casos. A
 aprovação, a cobertura de cada tipo e o destino de cada mutante deram iguais nos 5. Os pares e a
 tabela de resultado estão em [`documentacao/validacao/`](documentacao/validacao/README.md), com os
-links para as provas em PDF. Para refazer, rode no WSL, na raiz do repositório:
+links para as provas em PDF. Para refazer, suba a bancada uma vez com o `start.sh`, para criar o
+venv, e rode na raiz do repositório:
 
 ```bash
-~/veriweb/venv/bin/python documentacao/analise/validacao/validar_bancada.py
+api/venv/bin/python documentacao/analise/validacao/validar_bancada.py
 ```
 
 ## Histórico e avaliações salvas
@@ -291,5 +304,6 @@ Bancada_RTL/
 └── README.md
 ```
 
-Ficam fora do git, só na cópia da bancada no WSL, os arquivos `webhook.env`, `historico.csv` e
-`envios_pendentes.jsonl` e a pasta `avaliacoes/`.
+Os arquivos `webhook.env`, `historico.csv` e `envios_pendentes.jsonl` e a pasta `avaliacoes/`
+ficam fora do git. A bancada cria o histórico, os envios pendentes e a pasta de avaliações em
+`api/`, ao lado do `app.py`. O `webhook.env` é criado à mão, como explicado acima.

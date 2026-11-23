@@ -63,10 +63,10 @@ Os 5 casos deram **iguais** em tudo (ver `resultado.md`). Destaques:
 
 ## Como reproduzir
 
-No WSL, na raiz do repositório, com o venv da bancada (tem o `flask`):
+No Linux ou no WSL, na raiz do repositório, com o venv que o `api/start.sh` cria (tem o `flask`):
 
 ```
-~/veriweb/venv/bin/python documentacao/analise/validacao/validar_bancada.py
+api/venv/bin/python documentacao/analise/validacao/validar_bancada.py
 ```
 
 Imprime bancada × manual de cada caso, regrava `resultado.md` e sai com erro se algo não bater.

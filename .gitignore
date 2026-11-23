@@ -5,3 +5,5 @@ historico.csv
 webhook.env
 avaliacoes/
 envios_pendentes.jsonl
+# configuracao local do editor (fica so na maquina)
+.claude/
