@@ -1,11 +1,8 @@
 `timescale 1ns/1ps
 
-
-// HDLBits Exams/review2015_fancytimer (corrigido para o Verilator).
-// Correcao: count passou a ser "output reg" (recebe atribuicao nao-bloqueante).
 module top_module (
     input clk,
-    input reset,          // reset sincrono
+    input reset,
     input data,
     output reg [3:0] count,
     output counting,
@@ -16,7 +13,6 @@ module top_module (
     reg [2:0] state;
     reg [3:0] pattern;
     reg [15:0] small_count;
-
 
     always @(posedge clk) begin
         if (reset | (state == 3 & ack)) begin
@@ -49,7 +45,6 @@ module top_module (
             end
         end
     end
-
 
     assign counting = state == 2;
     assign done = state == 3;

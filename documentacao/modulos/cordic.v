@@ -1,18 +1,12 @@
-// `define VALID_FLAG
-// `define DEGREE_8_8
 `define RADIAN_16
 `define XY_BITS    16
 `define THETA_BITS 16
 `define ITERATIONS 16
 `define ITERATION_BITS 4
-//`define ITERATE
 `define PIPELINE
-//`define COMBINATORIAL
-//`define VECTOR
  `define ROTATE
 `define CORDIC_GAIN 17'd53955
 `define CORDIC_1 17'd19896
-
 
 `ifdef PIPELINE
 `define GENERATE_LOOP
@@ -20,7 +14,6 @@
 `ifdef COMBINATORIAL
 `define GENERATE_LOOP
 `endif
-
 
 module signed_shifter (
   input wire [`ITERATION_BITS-1:0] i,
@@ -32,7 +25,6 @@ module signed_shifter (
     for(j=0;j<i;j=j+1) Q = (Q >> 1) | (D[`XY_BITS] << `XY_BITS);
   end
 endmodule
-
 
 module rotator (
   input wire clk,
@@ -49,7 +41,6 @@ module rotator (
   output wire signed [`XY_BITS:0]    y_o,
   output wire signed [`THETA_BITS:0] z_o
   );
-
 
 `ifdef GENERATE_LOOP
   parameter integer iteration = 0;
@@ -103,7 +94,6 @@ module rotator (
   assign z_o = z_1;
 endmodule
 
-
 module cordic (
   input wire clk,
   input wire rst,
@@ -114,7 +104,6 @@ module cordic (
   input wire signed [`XY_BITS:0]    y_i,
   input wire signed [`THETA_BITS:0] theta_i,
 
-
   output wire signed [`XY_BITS:0]    x_o,
   output wire signed [`XY_BITS:0]    y_o,
   output wire signed [`THETA_BITS:0] theta_o
@@ -122,7 +111,6 @@ module cordic (
   ,input wire valid_in, output wire valid_out
 `endif
 );
-
 
 `ifdef RADIAN_16
 function [`THETA_BITS:0] tanangle;
@@ -175,7 +163,6 @@ function [`THETA_BITS:0] tanangle;
 endfunction
 `endif
 
-
 `ifdef GENERATE_LOOP
   wire signed [`XY_BITS:0] x [`ITERATIONS-1:0];
   wire signed [`XY_BITS:0] y [`ITERATIONS-1:0];
@@ -186,8 +173,7 @@ endfunction
   assign x_o = x[`ITERATIONS-1];
   assign y_o = y[`ITERATIONS-1];
   assign theta_o = z[`ITERATIONS-1];
-`endif // GENERATE_LOOP
-
+`endif
 
 `ifdef VALID_FLAG
   wire [`ITERATIONS-1:0] v;
@@ -200,7 +186,6 @@ always @ (posedge clk or posedge rst)
        end
 `endif
 
-
 `ifdef GENERATE_LOOP
 genvar i;
 generate for(i=0;i<`ITERATIONS-1;i=i+1) begin
@@ -210,7 +195,6 @@ generate for(i=0;i<`ITERATIONS-1;i=i+1) begin
 end
 endgenerate
 `endif
-
 
 `ifdef ITERATE
   reg [`ITERATION_BITS:0] iteration;

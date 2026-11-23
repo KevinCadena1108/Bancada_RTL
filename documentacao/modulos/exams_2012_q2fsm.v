@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module top_module (
     input  clk,
-    input  reset,   // reset sincrono ativo-alto
+    input  reset,
     input  w,
     output z
 );
@@ -12,10 +12,8 @@ module top_module (
     parameter [6:1] E = 6'b010000;
     parameter [6:1] F = 6'b100000;
 
-
     reg [6:1] curr_state;
     reg [6:1] next_state;
-
 
     always @(posedge clk) begin
         if (reset)
@@ -23,7 +21,6 @@ module top_module (
         else
             curr_state <= next_state;
     end
-
 
     always @(*) begin
         case (curr_state)
@@ -37,8 +34,6 @@ module top_module (
         endcase
     end
 
-
     assign z = curr_state[5] | curr_state[6];
-
 
 endmodule

@@ -1,11 +1,10 @@
 module top_module(
     input clk,
     input in,
-    input reset,    // Synchronous reset
+    input reset,
     output [7:0] out_byte,
     output reg done
 );
-
 
     parameter WAIT   = 5'b00001;
     parameter DATA   = 5'b00010;
@@ -13,54 +12,37 @@ module top_module(
     parameter PAR_CK = 5'b01000;
     parameter ERR    = 5'b10000;
 
-
     reg [4:0] curr_state;
     reg [4:0] next_state;
-
 
     wire data_to_parcheck;
     wire par_ok;
     wire check2wait;
 
-
-    // ------------------------------------------------
-    // Next state logic
-    // ------------------------------------------------
     always @(*) begin
         case (curr_state)
-
 
             WAIT:
                 next_state = (~in) ? DATA : WAIT;
 
-
             DATA:
                 next_state = (data_to_parcheck) ? PAR_CK : DATA;
-
 
             PAR_CK:
                 next_state = (par_ok) ? CHECK : ERR;
 
-
             CHECK:
                 next_state = (in) ? WAIT : ERR;
-
 
             ERR:
                 next_state = (in) ? WAIT : ERR;
 
-
             default:
                 next_state = WAIT;
-
 
         endcase
     end
 
-
-    // ------------------------------------------------
-    // State register
-    // ------------------------------------------------
     always @(posedge clk) begin
         if (reset)
             curr_state <= WAIT;
@@ -68,18 +50,10 @@ module top_module(
             curr_state <= next_state;
     end
 
-
-
-
-    // ------------------------------------------------
-    // Count 8 data bits
-    // ------------------------------------------------
     reg [2:0] cnt;
-
 
     assign data_to_parcheck =
         (curr_state == DATA) && (cnt == 3'd7);
-
 
     always @(posedge clk) begin
         if (reset) begin
@@ -93,15 +67,8 @@ module top_module(
         end
     end
 
-
-
-
-    // ------------------------------------------------
-    // DONE
-    // ------------------------------------------------
     assign check2wait =
         (curr_state == CHECK) && in;
-
 
     always @(posedge clk) begin
         if (reset) begin
@@ -115,14 +82,7 @@ module top_module(
         end
     end
 
-
-
-
-    // ------------------------------------------------
-    // Datapath
-    // ------------------------------------------------
     reg [7:0] shift_reg;
-
 
     always @(posedge clk) begin
         if (reset) begin
@@ -136,20 +96,10 @@ module top_module(
         end
     end
 
-
-
-
-    // ------------------------------------------------
-    // Odd parity check
-    // ------------------------------------------------
     assign par_ok =
         (curr_state == PAR_CK) &&
         (^{in, shift_reg[7:0]});
 
-
-
-
     assign out_byte = shift_reg;
-
 
 endmodule

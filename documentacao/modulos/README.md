@@ -1,7 +1,6 @@
 # Módulos RTL do experimento
 
-Os 10 módulos avaliados no TCC, exatamente como foram colados nos prompts e na Bancada RTL. Todos
-são sequenciais.
+Os 10 módulos avaliados no TCC. Todos são sequenciais.
 
 | Arquivo | Módulo no TCC | Origem | Função | ICV | Classe |
 |---|---|---|---|---|---|

@@ -1,32 +1,28 @@
 module spi_master(rstb,clk,mlb,start,tdat,cdiv,din, ss,sck,dout,done,rdata);
     input rstb,clk,mlb,start;
-    input [7:0] tdat;  //transmit data
-    input [1:0] cdiv;  //clock divider
+    input [7:0] tdat;
+    input [1:0] cdiv;
         input din;
         output reg ss; 
         output reg sck; 
         output reg dout; 
     output reg done;
-        output reg [7:0] rdata; //received data
-
+        output reg [7:0] rdata;
 
 parameter idle=2'b00;                
 parameter send=2'b10; 
 parameter finish=2'b11; 
 reg [1:0] cur,nxt;
 
-
         reg [7:0] treg,rreg;
         reg [3:0] nbit;
         reg [4:0] mid,cnt;
         reg shift,clr;
 
-
-//FSM i/o
 always @(start or cur or nbit or cdiv or rreg) begin
                  nxt=cur;
                  clr=0;  
-                 shift=0;//ss=0;
+                 shift=0;
                  case(cur)
                         idle:begin
                                 if(start==1)
@@ -41,7 +37,7 @@ always @(start or cur or nbit or cdiv or rreg) begin
                                                 done=1'b0;
                                                 nxt=send;         
                                                 end
-                        end //idle
+                        end
                         send:begin
                                 ss=0;
                                 if(nbit!=8)
@@ -50,7 +46,7 @@ always @(start or cur or nbit or cdiv or rreg) begin
                                                 rdata=rreg;done=1'b1;
                                                 nxt=finish;
                                         end
-                                end//send
+                                end
                         finish:begin
                                         shift=0;
                                         ss=1;
@@ -59,10 +55,8 @@ always @(start or cur or nbit or cdiv or rreg) begin
                                  end
                         default: nxt=finish;
       endcase
-    end//always
+    end
 
-
-//state transistion
 always@(negedge clk or negedge rstb) begin
  if(rstb==0) 
    cur<=finish;
@@ -70,8 +64,6 @@ always@(negedge clk or negedge rstb) begin
    cur<=nxt;
  end
 
-
-//setup falling edge (shift dout) sample rising edge (read din)
 always@(negedge clk or posedge clr) begin
   if(clr==1) 
                 begin cnt=0; sck=1; end
@@ -81,44 +73,38 @@ always@(negedge clk or posedge clr) begin
           if(cnt==mid) begin
                   sck=~sck;
                 cnt=0;
-                end //mid
-        end //shift
- end //rst
-end //always
+                end
+        end
+ end
+end
 
-
-//sample @ rising edge (read din)
-always@(posedge sck or posedge clr ) begin // or negedge rstb
+always@(posedge sck or posedge clr ) begin
  if(clr==1)  begin
                         nbit=0;  rreg=8'hFF;  end
     else begin 
-                  if(mlb==0) //LSB first, din@msb -> right shift
+                  if(mlb==0)
                         begin  rreg={din,rreg[7:1]};  end 
-                  else  //MSB first, din@lsb -> left shift
+                  else
                         begin  rreg={rreg[6:0],din};  end
                   nbit=nbit+1;
- end //rst
-end //always
-
+ end
+end
 
 always@(negedge sck or posedge clr) begin
  if(clr==1) begin
           treg=8'hFF;  dout=1;  
   end  
  else begin
-                if(nbit==0) begin //load data into TREG
+                if(nbit==0) begin
                         treg=tdat; dout=mlb?treg[7]:treg[0];
-                end //nbit_if
+                end
                 else begin
-                        if(mlb==0) //LSB first, shift right
+                        if(mlb==0)
                                 begin treg={1'b1,treg[7:1]}; dout=treg[0]; end
-                        else//MSB first shift LEFT
+                        else
                                 begin treg={treg[6:0],1'b1}; dout=treg[7]; end
                 end
- end //rst
-end //always
-
-
-
+ end
+end
 
 endmodule
