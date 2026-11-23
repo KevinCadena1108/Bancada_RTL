@@ -67,10 +67,11 @@ Em 21/11/2026 a documentação foi comparada de novo com o PDF do TCC II (24 pá
 - Figuras do TCC: a Figura 1 é `figuras/processo_trabalho.png`; a Figura 2 é
   `figuras/bancada_rtl_completa.png`; as Figuras 3 e 4 são `figuras/grafico_exemplos.png` e
   `figuras/grafico_cobertura100.png` (feitas fora do repositório, sem script gerador).
-- **Valor suspeito:** no Apêndice B, Count clock, GPT, rodada 1, *Few-shot*, desvio = 65,5%. O
-  desvio desse módulo só pode ser múltiplo de 12,5% (todos os outros valores são), então deve ser
-  erro de digitação na planilha (provavelmente 62,5%). Conferir no `historico.csv` do PC do
-  trabalho, que tem as avaliações da 1ª rodada.
+- **Count clock, GPT, rodada 1, *Few-shot*.** O desvio desse testbench aparece como 65,5% na
+  planilha, no Apêndice B e no TCC, e esse é o valor usado em todos os resultados. No
+  `historico.csv` da bancada, a mesma avaliação aparece com 62,5% (18/09/2026, 15h14). Com 62,5%,
+  só a média de desvio do *Few-shot* na Tabela 4 mudaria, de 91,7% para 91,6%. Nenhuma conclusão
+  do trabalho muda.
 
 ## Como gerar de novo
 
