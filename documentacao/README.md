@@ -20,7 +20,7 @@ testbenches), copiada em `analise/estatistica/pdf_comum.py` (mutantes) e
 | `resultados/resultados_explicados.pdf` | cada resultado da seção Resultados, com o cálculo passo a passo e o que ele representa | `analise/estatistica/gerar_pdf_resultados.py` |
 | `resultados/posto_medio_passo_a_passo.pdf` | o posto médio explicado, com a fonte da fórmula e os resultados de cada estratégia | `analise/estatistica/gera_pdf_posto.py` |
 | `apendices/apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
-| `apendices/apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados, cálculo do ICV e uma tabela de resultados por módulo | `analise/estatistica/gerar_apendice_latex.py` |
+| `apendices/apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados, cálculo do ICV, uma tabela de resultados por módulo e as posições usadas no posto médio | `analise/estatistica/gerar_apendice_latex.py` |
 | `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`), capturas da tela da bancada (`bancada_rtl_*`) e os gráficos dos Resultados (`grafico_*`) | `analise/figuras/figura_processo.py` (processo) |
 | `drive/` | os 8 PDFs explicativos da pasta "Documentação" do Google Drive (ver abaixo) | `analise/documentos/gerar_pdfs_drive.py` |
 | [`validacao/`](validacao/README.md) | validação da Bancada RTL, ferramenta × Verilator à mão | `analise/validacao/validar_bancada.py` |

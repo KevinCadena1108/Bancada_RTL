@@ -3,7 +3,8 @@
 Igual ao Apêndice B do TCC (PDF de 19/11/2026): (1) a tabela dos módulos utilizados (origem e
 função); (2) o cálculo do ICV de cada módulo; (3) uma tabela por módulo, com um bloco por IA (GPT
 e Gemini) e, em cada bloco, as linhas Linha, Desvio, Alternância e Mutantes, com a rodada 1 ao
-lado da rodada 2 (6 estratégias em cada).
+lado da rodada 2 (6 estratégias em cada); (4) a posição de cada estratégia em cada módulo, base
+do posto médio (`tab:ap_postos`).
 A cobertura de FSM saiu do trabalho em 2026-11-13: a aproximação por `case` da Bancada pegava o
 Conwaylife (case sobre a soma de vizinhos, não é FSM) e não via as FSMs com `if` (Fancytimer,
 wbuart32). O P_FSM do ICV usa outra detecção e continua valendo.
@@ -17,7 +18,7 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
-from pdf_comum import CIRCUITOS, MODELOS, RODADAS  # noqa: E402
+from pdf_comum import CIRCUITOS, MODELOS, RODADAS, postos, valores  # noqa: E402
 
 SAIDA = sys.argv[1] if len(sys.argv) > 1 else os.path.join(AQUI, "..", "..", "apendices",
                                                            "apendice_resultados.tex")
@@ -117,7 +118,8 @@ w("Este apêndice reúne os módulos utilizados e os dados completos do experime
   "Tabela~\\ref{tab:ap_icv} mostra o cálculo do ICV. Em seguida, as Tabelas~\\ref{"
   + rotulo(ORDEM[0]) + "} a~\\ref{" + rotulo(ORDEM[-1]) + "} trazem, para cada módulo e cada "
   "LLM, as coberturas (\\%) e os mutantes detectados por cada estratégia nas duas rodadas. "
-  "Nessas tabelas, ZS indica \\textit{Zero-shot}, FS indica \\textit{Few-shot}, Esp indica "
+  "Por fim, a Tabela~\\ref{tab:ap_postos} mostra a posição de cada estratégia em cada módulo, "
+  "usada no cálculo do posto médio. Nessas tabelas, ZS indica \\textit{Zero-shot}, FS indica \\textit{Few-shot}, Esp indica "
   "Especialista e Pln indica \\textit{Planning}. Nos mutantes, $k$/4 indica quantos dos 4 "
   "mutantes foram detectados, NP indica que o \\textit{testbench} não passou no circuito "
   "original e TO indica que ele excedeu o tempo limite. As coberturas dos \\textit{testbenches} "
@@ -210,6 +212,44 @@ for c in ORDEM:
     w("  \\end{tabular}")
     w("\\end{table}")
     w("")
+
+# ---- posições de cada estratégia em cada módulo (base do posto médio) ----
+def pos_txt(x):
+    return str(int(x)) if float(x).is_integer() else br(x)
+
+
+POS = {m: valores(m) for m in MODELOS}            # média das 2 rodadas, NP/TO = 0
+POS = {m: {c: postos(POS[m][CIRCUITOS.index(c)]) for c in ORDEM} for m in MODELOS}
+PM = [sum(POS[m][c][e] for c in ORDEM) / len(ORDEM) for m in MODELOS for e in range(6)]
+assert [f"{x:.2f}" for x in PM] == ["2.45", "3.35", "3.65", "3.20", "3.70", "4.65",
+                                    "2.25", "4.00", "2.95", "4.30", "3.55", "3.95"], PM
+w("\\begin{table}[htbp]")
+w("  \\centering")
+w("  \\caption{Posição de cada estratégia em cada módulo, usada no cálculo do posto médio}")
+w("  \\label{tab:ap_postos}")
+w("  \\scriptsize")
+w("  \\setlength{\\tabcolsep}{3pt}")
+w("  \\begin{tabular}{@{}l*{6}{c}@{\\hspace{8pt}}*{6}{c}@{}}")
+w("    \\toprule")
+w("     & " + " & ".join(f"\\multicolumn{{6}}{{c}}{{{NOME_MODELO[m]}}}" for m in MODELOS) + " \\\\")
+w("    \\cmidrule(r){2-7} \\cmidrule(l){8-13}")
+w("    Módulo & " + " & ".join(EST + EST) + " \\\\")
+w("    \\midrule")
+for c in ORDEM:
+    w(f"    {ICV[c][0]} & " + " & ".join(pos_txt(POS[m][c][e]) for m in MODELOS for e in range(6))
+      + " \\\\")
+w("    \\midrule")
+w("    Posto médio & " + " & ".join(br(x, 2) for x in PM) + " \\\\")
+w("    \\bottomrule")
+w("  \\end{tabular}")
+w("")
+w("  \\smallskip")
+w("  {\\footnotesize Em cada módulo e LLM, as estratégias foram ordenadas pela média de mutantes "
+  "detectados nas duas rodadas, com 6 para o melhor resultado e empates recebendo a média das "
+  "posições. A última linha é a média de cada coluna. Com os dois LLMs juntos, o posto médio é "
+  "a média das 20 posições.}")
+w("\\end{table}")
+w("")
 
 open(SAIDA, "w", encoding="utf-8", newline="\n").write("\n".join(L))
 print("ok", os.path.normpath(SAIDA), len(L), "linhas")
