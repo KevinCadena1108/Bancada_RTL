@@ -21,7 +21,7 @@ testbenches), copiada em `analise/estatistica/pdf_comum.py` (mutantes) e
 | `resultados/posto_medio_passo_a_passo.pdf` | o posto médio explicado, com a fonte da fórmula e os resultados de cada estratégia | `analise/estatistica/gera_pdf_posto.py` |
 | `apendices/apendice_prompts.tex` | Apêndice A do TCC: composição dos 6 prompts e trechos de exemplo | escrito à mão (cópia do Overleaf) |
 | `apendices/apendice_resultados.tex` | Apêndice B do TCC: módulos utilizados, cálculo do ICV, uma tabela de resultados por módulo e as posições usadas no posto médio | `analise/estatistica/gerar_apendice_latex.py` |
-| `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`), capturas da tela da bancada (`bancada_rtl_*`) e os gráficos dos Resultados (`grafico_*`) | `analise/figuras/figura_processo.py` (processo) |
+| `figuras/` | figura das 4 etapas do trabalho (`processo_trabalho`), capturas da tela da bancada (`bancada_rtl_*`) e os gráficos dos Resultados (`grafico_*`) | `analise/figuras/figura_processo.py` (processo) e `analise/figuras/graficos_resultados.py` (gráficos) |
 | `explicacoes/` | os 8 PDFs que explicam o trabalho, a bancada e as métricas, os mesmos da pasta "Documentação" do Google Drive (ver abaixo) | `analise/documentos/gerar_pdfs_explicacoes.py` |
 | [`validacao/`](validacao/README.md) | validação da Bancada RTL, ferramenta × Verilator à mão | `analise/validacao/validar_bancada.py` |
 | `analise/` | os scripts acima e os dados da planilha | — |
@@ -66,7 +66,7 @@ Em 21/11/2026 a documentação foi comparada de novo com o PDF do TCC II (24 pá
   `validacao/resultado.md`.
 - Figuras do TCC: a Figura 1 é `figuras/processo_trabalho.png`; a Figura 2 é
   `figuras/bancada_rtl_completa.png`; as Figuras 3 e 4 são `figuras/grafico_exemplos.png` e
-  `figuras/grafico_cobertura100.png` (feitas fora do repositório, sem script gerador).
+  `figuras/grafico_cobertura100.png`, gerados por `analise/figuras/graficos_resultados.py` (23/11/2026: sem os rótulos de diferença em pontos e com "sem detectar" no eixo da Figura 4).
 - **Count clock, GPT, rodada 1, *Few-shot*.** O desvio desse testbench aparece como 65,5% na
   planilha, no Apêndice B e no TCC, e esse é o valor usado em todos os resultados. No
   `historico.csv` da bancada, a mesma avaliação aparece com 62,5% (18/09/2026, 15h14). Com 62,5%,
