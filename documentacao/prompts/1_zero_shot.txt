@@ -14,4 +14,4 @@ Requisitos do testbench:
 - Cada $display deve ter a string em uma única linha.
 - Termine com $finish.
 - Deve compilar no Verilator
-  (código arquivos externos).
+  (código sem arquivos externos).
