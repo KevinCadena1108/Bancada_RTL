@@ -122,7 +122,7 @@ caixa(70, 73, 42, 16, ["Medição da cobertura", "linha, desvio", "e alternânci
 seta((42, 55.5), (42, 73))
 seta((62, 81), (70, 81))
 # a validação da bancada (feita uma vez, à parte) fica só no texto, não na figura
-losango(91, 104, 40, 18, ["Testbench passou?"])
+losango(91, 104, 40, 18, ["Testbench aprovado?"])
 seta((91, 89), (91, 95))
 caixa(118, 96.5, 37, 15, ["Teste de mutação", "4 mutantes por circuito;", "conta os detectados"])
 caixa(22, 96.5, 40, 15, ["0 mutantes detectados", "reprovado ou excedeu", "o tempo limite"], fundo=NEG, borda=NEG_BORDA)
